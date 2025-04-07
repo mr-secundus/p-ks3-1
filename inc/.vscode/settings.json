@@ -1,0 +1,13 @@
+{
+  "C_Cpp.default.compilerPath": "d:\\nxp\\MCUXpressoIDE_24.12.148\\ide\\tools\\bin\\arm-none-eabi-gcc.exe",
+  "C_Cpp.default.cppStandard": "c++17",
+  "C_Cpp.default.cStandard": "c11",
+  "C_Cpp.default.defines": [
+    "LWIP_DEBUG"
+  ],
+  "C_Cpp.default.intelliSenseMode": "gcc-arm",
+  "C_Cpp.default.systemIncludePath": [
+    "d:\\nxp\\MCUXpressoIDE_24.12.148\\ide\\tools\\arm-none-eabi\\include\\"
+  ],
+  "C_Cpp.errorSquiggles": "enabled"
+}

@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "name": "gcc-debug",
+            "includePath": [
+                "d:/nxp/MCUXpressoIDE_24.12.148/ide/tools/arm-none-eabi/include/**",
+                "d:/nxp/MCUXpressoIDE_24.12.148/ide/tools/lib/gcc/arm-none-eabi/13.2.1/include",
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../../lpc_chip_43xx/inc"
+            ],
+            "defines": [
+                "DEBUG",
+                "LWIP_DEBUG",
+                "CODE_RED",
+                "__NEWLIB__",
+                "CORE_M4",
+                "CPP_USE_HEAP",
+                "__LPC43XX__",
+                "__cplusplus"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-arm",
+            "compilerPath": "d:/nxp/MCUXpressoIDE_24.12.148/ide/tools/bin/arm-none-eabi-gcc.exe"
+        }
+    ],
+    "version": 4
+}
