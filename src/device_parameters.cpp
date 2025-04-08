@@ -7,10 +7,10 @@
 #include "tparameters.h"
 #include "data_buffers.h"
 #include "version.h"
+#include "data.h"
+
 
 TDevice_Parameters Parameters;
-
-uint32_t R14=0, R15=0;
 
 //
 bool TDevice_Parameters::__write(uint16_t n, int32_t v)
@@ -179,7 +179,7 @@ bool TDevice_Parameters::__read(uint16_t n, int32_t* v)
 //    case 3: *v = setup1.netAddress;     break;
 //		case 4:	*v = setup2.baud;						break;
 		case 2: *v = DEFAULT_SERIAL_NUMBER;   break;
-		case 3: *v = DEFAULT_NET_ADDRESS;     break;
+		case 3: *v = DEFAULT_NET_ADDRESS_HI_IO;     break;
 		case 4:	*v = UART1_BAUD;							break;
 
     case 14:  *v = R14;   break;

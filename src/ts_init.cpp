@@ -122,7 +122,7 @@ void TTaskInit::process(void)
 			// 	HAL::setUART_Baud(LINK_ID_HI_IO, setup2.baud);
 				
 			// Protocol::init(setup1.R3, NET_ADDRESS_LOCAL, NET_ADDRESS_EXT);
-			Protocol::init(DEFAULT_NET_ADDRESS, 1, 1);
+			Protocol::init(DEFAULT_NET_ADDRESS_HI_IO, 1, 1);
 			timer = now;
 			state = 2;
 			break;                                                           
