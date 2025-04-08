@@ -3,15 +3,12 @@
 #if !defined DEFINES_H
 #define      DEFINES_H         
 
-#include "debug.h"
-
 
 //*****************************************************************************
 
-#define DEVICE_ID								 2501				// Концентратор связи
+#define DEVICE_ID								 2501				// Концентратор связи КС3
 
-#define DEFAULT_SERIAL_NUMBER		52975				// значения параметров по умолчанию -
-#define DEFAULT_NET_ADDRESS			    9				// используются при ошибке загрузки из flash
+#define DEFAULT_SERIAL_NUMBER		250100			// с/н
 
 #define DEFAULT_MAC_HI			0x00000060UL		// default MAC адрес
 #define DEFAULT_MAC_LO			0x37120000UL     
@@ -32,12 +29,16 @@
 //                           Настройки UART
 //-----------------------------------------------------------------------------
 
-#define UART3_BAUD		  	115200				// default baud RS232
-#define UART1_BAUD		  	115200				// default baud RS485
+#define RS485_1_BAUD	  	115200				// RS485-1 (X4/X5) ISO
+#define RS485_2_BAUD	  	115200				// RS485-2 (X6)
+#define RS232_BAUD	  		115200				// RS232   (X3)
 
-#define UART1_TX_SIZE		 		 256			// RS485 down link
+#define UART3_BAUD		  	RS232_BAUD	
+#define UART1_BAUD		  	RS485_1_BAUD
+
+#define UART1_TX_SIZE		 		 256				// RS485 down link
 #define UART1_RX_SIZE		    2048
-#define UART3_TX_SIZE		     256			// RS232 console
+#define UART3_TX_SIZE		     256				// RS232 console
 #define UART3_RX_SIZE		      64
 
 //-----------------------------------------------------------------------------
@@ -58,91 +59,53 @@
 //                       Сохраняемые параметры
 //-----------------------------------------------------------------------------
 
-#define USER_NV_DATA_SIZE  	32 	// количество регистров калибровочных коэффициентов
+#define NUM_NV_BLOCKS				3		// число блоков параметров
 
-#define NUM_NV_BLOCKS				6		// число блоков параметров
-
-// Идентификаторы блоков
-#define NV_ID_SETUP1				1		// сетевые настройки
-#define NV_ID_USER_DATA			2		// калибровочные коды
-#define NV_ID_SETUP2				3		// RS485 baud, код формата данных, коды коррекции RTC и ТС
-#define NV_ID_SETUP3				4		// конфигурация АЦП1 АЦП2
-// блок №5 - резерв
-#define NV_ID_SETUP4				6		// ID внешних датчиков
-
-// Номера страниц Flash/EEPROM для блоков параметров
-#define NV_PG_SETUP1				1		
-#define NV_PG_SETUP2				2		
-#define NV_PG_SETUP3				3		
-#define NV_PG_USER_DATA			4			// Внимание: USER_DATA занимает три страницы
-#define NV_PG_SETUP4				8		
-
-// Две страницы для хранения счетчика наработки.
-// Только для внутреннего использования, в общее число блоков не входят.
-#define NV_ID_SETUP00				7			// id
-#define NV_ID_SETUP01				8
-#define NV_PG_SETUP00				11		// номера страниц
-#define NV_PG_SETUP01				12
-
-//-----------------------------------------------------------------------------
-//                            Прикладные
-//-----------------------------------------------------------------------------
-
+// Идентификаторы блоков - см. TSetup1 .. TSetup3
+#define NV_ID_SETUP1				1
+#define NV_ID_SETUP2				2
+#define NV_ID_SETUP3				3
 
 
 //-----------------------------------------------------------------------------
 //       Настройки процесса измерения, передачи и буферизации данных
 //-----------------------------------------------------------------------------
 
-#define DATA_BUFFERS_N 					 32 				// количество буферов данных
+// Интерфейс связи #1 - RS485-1
+#define LINK1_SLAVES_N					 	8					// макс. число ведомых устройств
+
+#define DATA_BUFFERS_N 						32 				// количество буферов данных
 
 // Минимальное количество свободных буферов, при котором разрешается посылка
 // внеочередного запроса данных в БИ
-#define DATA_BUFFERS_FREE_TO_RQ  3
+#define DATA_BUFFERS_FREE_TO_RQ  	3
 
-// Нумерация пакетов данных для модулей АЦП
-#define ADC1_PNUMBER_MIN				1
-#define ADC1_PNUMBER_MAX				1000
-
-#define TIMEOUT_MEAS_STOP				2000				// таймаут контроля останова измерения [мс]
-																						// в задаче управления АЦП1 АЦП2
-
-#define ADC1_SEND_RQ_PERIOD			250					// период отправки запросов на получение блоков данных
+#define DATA_SEND_RQ_PERIOD				250				// период отправки запросов на получение блоков данных
 																						// от модуля AI4R [мс]
 
-#define AI4R_FULL_LIMIT_TO_RQ		60					// количество заполненных буферов в AI4R, свыше которого выполняется
+#define DATA_FULL_LIMIT_TO_RQ			60				// количество заполненных буферов в AI4R, свыше которого выполняется
 																						// запрос занных от AI4R при полном заполнении выходного FIFO АЦП1																						
 
 
 //-----------------------------------------------------------------------------
-//      Обмен по протоколу DataIO с ВУ, узлами и внешними устройствами
+//                Обмен с ВУ и ведомыми устройствами
 //-----------------------------------------------------------------------------
 
 //
-// Идентификаторы каналов связи - передаются в соотв. объекты TProtocolInstance,
-// соответствуют номерам используемых UART - см. реализацию TLayer1TxInterface в hal_uarts.cpp.
-// Указаны номера разъемов на плате интерфейса.
+// Идентификаторы каналов связи - передаются в соотв. объекты TProtocolInstance.
+// Для каналов, использующих UART, соответствуют номерам UART - см. реализацию
+// TLayer1TxInterface
 //
-#define LINK_ID_HI_IO				3			// связь с ВУ                   RS485 @ X6
-#define LINK_ID_LOCAL				1			// внутренняя шина устройства		RS485 @ X7
+#define LINK_ID_HI_IO									9			// связь с ВУ по UDP
+#define LINK_ID_LOCAL									1			// RS485-1
 
+#define DEFAULT_NET_ADDRESS_HI_IO    	99
+#define DEFAULT_NET_ADDRESS_LINK1			0
+#define DEFAULT_NET_ADDRESS_LINK2			0
 
-#define NET_ADDRESS_LOCAL						0					// сетевой адрес интерфейса связи с локальными устройствами
-#define NET_ADDRESS_EXT							0					// сетевой адрес интерфейса связи с внешними
-																							// ведомыми устройствами
+#define PROTOCOL_BROADCAST_ADDRESS	0xFF		// broadcast address
+#define PROTOCOL_RX_TIMEOUT					5		  	// таймаут приема данных, миллисекунд
 
-#define PROTOCOL_BROADCAST_ADDRESS	0xff		// broadcast address
-#define PROTOCOL_RX_TIMEOUT					5		  // таймаут приема данных, миллисекунд
-
-// обмен с узлами по внутренней шине [миллисекунды]
-#define TIMEOUT_SLAVE_ANSWER_LOC   20				// таймаут ожидания ответа от устройства
-#define TIMEOUT_END_PACKET_LOC      2				// таймаут ожидания конца пакета (макс. интервал между сообщениями в одном пакете)
-//#define TM_PACKET_INTERVAL_LOC		  2				// мин. интервал между пакетами			
-#define TM_POLL_INTERVAL_LOC			 10 			// интервал опроса устройств
-
-#define TX_RQ_N_LOC								16				// размер очереди запросов Local
-
-#define AI4R_NET_ADDRESS					10 				// сетевой адрес модуля AI4R
 
 // Макс. размер прикладных данных в выходном пакете для разных вариантов
 #define MAX_TX_APP_SIZE_DATAIO				(TProtocol::MaxPacketPayload)			// RS485
