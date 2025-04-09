@@ -138,7 +138,28 @@ void initLed()
 //                              Public
 //-----------------------------------------------------------------------------
 
-//
+// Reset MCU
+void reset()
+{
+	NVIC_SystemReset();
+	while(1);
+}                
+
+
+// Стробирование Watchdog
+void clearWDT(void)
+{
+/*	static bool wdtst = false;
+	wdtst ^= 1;
+	pExtWDT.set(wdtst);  
+	disable();
+	LPC_WDT->FEED = 0xAA; 
+	LPC_WDT->FEED = 0x55; 
+	enable(); */
+}
+
+
+// Задержка ms миллисекунд
 void delay(uint32_t ms)
 {
 	uint32_t t = now;

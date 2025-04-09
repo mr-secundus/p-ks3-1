@@ -43,12 +43,10 @@ extern volatile uint32_t ticks;
 		return ticks2 + (0xFFFFFFFF - ticks1);
 } */
 
+void reset(void);
 void delay(uint32_t ms);
-
 void setLed(uint8_t LEDNumber, bool st);
-
 void init(void);
-
 void process(void);
 	
 };		// namespace hal

@@ -6,7 +6,7 @@
 
 //*****************************************************************************
 
-#define DEVICE_ID								 2501				// Концентратор связи КС3
+#define DEVICE_ID								  2501			// Концентратор связи КС3
 
 #define DEFAULT_SERIAL_NUMBER		250100			// с/н
 
@@ -100,8 +100,8 @@
 #define LINK_ID_LOCAL									1			// RS485-1
 
 #define DEFAULT_NET_ADDRESS_HI_IO    	99
-#define DEFAULT_NET_ADDRESS_LINK1			0
-#define DEFAULT_NET_ADDRESS_LINK2			0
+#define DEFAULT_NET_ADDRESS_LINK1			1
+#define DEFAULT_NET_ADDRESS_LINK2			1
 
 #define PROTOCOL_BROADCAST_ADDRESS	0xFF		// broadcast address
 #define PROTOCOL_RX_TIMEOUT					5		  	// таймаут приема данных, миллисекунд

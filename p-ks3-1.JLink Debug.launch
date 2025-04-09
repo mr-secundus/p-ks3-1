@@ -28,10 +28,10 @@
     <booleanAttribute key="com.nxp.mcuxpresso.segger.powertarget 50" value="false"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.reset" value="true;"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.rtos" value="false;GDBServer/RTOSPlugin_FreeRTOS"/>
-    <stringAttribute key="com.nxp.mcuxpresso.segger.select" value="USB=59103407"/>
+    <stringAttribute key="com.nxp.mcuxpresso.segger.select" value="IP=192.168.0.111"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.silent" value="-nosilent"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.singlerun" value="-singlerun"/>
-    <stringAttribute key="com.nxp.mcuxpresso.segger.speed" value="fixed 4000"/>
+    <stringAttribute key="com.nxp.mcuxpresso.segger.speed" value="fixed 2000"/>
     <intAttribute key="com.nxp.mcuxpresso.segger.swoport" value="2332"/>
     <intAttribute key="com.nxp.mcuxpresso.segger.telnetport" value="2333"/>
     <stringAttribute key="com.nxp.mcuxpresso.segger.verify" value="-vd"/>
@@ -73,13 +73,13 @@
     <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="0"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_ID" value="gdb"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="remote"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug\sk4337_udp_io.axf"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="sk4337_udp_io"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/p-ks3-1.axf"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="p-ks3-1"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.crt.advproject.config.exe.debug.588288142"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>
     <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/sk4337_udp_io"/>
+        <listEntry value="/p-ks3-1"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="4"/>

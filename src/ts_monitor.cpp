@@ -62,5 +62,12 @@ void TTaskMonitor::process(void)
   {
     timer = now;
 //    processIndication(0);
+
+    // применение нового сетевого адреса
+/*		if(serviceFlags.cmdAcceptSAddress)
+		{
+			Protocol::configureHiIO(setup1.R3);
+			serviceFlags.cmdAcceptSAddress = 0;
+		} */
   }
 }

@@ -6,17 +6,16 @@
 #include "cfg/defines.h"
 #include "debug.h"
 #include "hal.h"
-//#include "types.h"
+#include "data.h"
 #include "protocol.h"
 #include "data_buffers.h"
-//#include "tparameters.h"
-//#include "uip_app\udp_io.h"
+#include "nv_parameters.h"
 
 
-// Инициализация полей конфигурации setup1 default значениями
-//void initSetup1DefaultValues(TDeviceSetup1 *setup1);
+// Инициализация конфигурации default значениями
+void initSetup2DefaultValues(TSetup2 *setup2);
 
-void loadFromNVMemory(void);
+void loadNvData(void);
 void printMemoryInfo(void);					// debug
 
 extern "C"
@@ -114,15 +113,9 @@ void TTaskInit::process(void)
 #ifdef DEBUG_INIT  	
 //			printMemoryInfo();
 #endif
-			
-//			initParameters();
-//			loadFromNVMemory();      
-				
-			// if(!NV_BLOCK_RD_ERROR(2))
-			// 	HAL::setUART_Baud(LINK_ID_HI_IO, setup2.baud);
-				
-			// Protocol::init(setup1.R3, NET_ADDRESS_LOCAL, NET_ADDRESS_EXT);
-			Protocol::init(DEFAULT_NET_ADDRESS_HI_IO, 1, 1);
+			loadNvData();      
+//			Protocol::init(DEFAULT_NET_ADDRESS_HI_IO, 1, 1);
+			Protocol::init(setup2.netAddrHi, setup2.netAddrRs485_1, setup2.netAddrRs485_2);
 			timer = now;
 			state = 2;
 			break;                                                           
@@ -142,25 +135,68 @@ void TTaskInit::process(void)
 }
 
 //*****************************************************************************
+
+#ifdef DEBUG_INIT  	
+#define IP4_ADDR(ipaddr, a,b,c,d) \
+        (ipaddr)->addr = ((u32_t)((d) & 0xff) << 24) | \
+                         ((u32_t)((c) & 0xff) << 16) | \
+                         ((u32_t)((b) & 0xff) << 8)  | \
+                          (u32_t)((a) & 0xff)
+//
+void printIp(char *s, char const *msg, uint32_t ip)
+{
+	sprintf(s, "%s %ld.%ld.%ld.%ld\n", msg, ip & 0xFF, (ip >> 8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF);
+}
+#endif
+
+
 //
 // Инициализация ЭНП, загрузка сохраняемых блоков параметров.
-// При ошибках выполнения операций устанавливаются соотв. биты в R50 R99.
+// При ошибке загрузки устанавливаются соотв. биты в R99.
 //
-void loadFromNVMemory(void)
+void loadNvData(void)
 {
-/*	initSetup1DefaultValues(&setup1);
+	initSetup2DefaultValues(&setup2);
+	
+	nv_parameters::init();
 
-	// загрузка блоков параметров из ЭНП
 	for(uint16_t i=1; i<=NUM_NV_BLOCKS; i++)
 	{
-		uint32_t t=now;
-		while(HAL::difftime(t, now) < MS_TO_TICKS(1));
-		int16_t rc = loadNVBlock(i);
+			nv_parameters::rc_t rc = nv_parameters::load(i, &R99);
 #ifdef DEBUG_INIT  	
-		puts("#loadNVBlock("); putd(i); puts(") :"); putd(rc); putc('\n');
+		puts(" nv_parameters::load("); putd(i); puts(") : ");
+//		putd(rc);
+		switch(rc)
+		{
+			default: puts("Error?\n");	break;
+			case nv_parameters::rcOk:					puts("Ok\n");				break;
+			case nv_parameters::rcError:			puts("Error\n");		break;
+			case nv_parameters::rcNotReady:		puts("NotReady\n");	break;
+			case nv_parameters::rcCrcError:		puts("CrcError\n");	break;
+			case nv_parameters::rcInvalidData:puts("InvalidData\n");	break;
+		}
 #endif
-  } */
+  }
+	
+#ifdef DEBUG_INIT  	
+	char s[64];
+	sprintf(s, " s/n : %ld\n", setup1.serialNumber);
+	puts(s);
+	sprintf(s, " NetAddr : %d %d %d\n", setup2.netAddrHi, setup2.netAddrRs485_1, setup2.netAddrRs485_2);
+	puts(s);
+	sprintf(s, " Baud : %ld %ld %ld\n", setup2.baudRs232, setup2.baudRs485_1, setup2.baudRs485_2);
+	puts(s);
+	printIp(s, " IP host :", setup2.IP_HostAddress);
+	puts(s);
+	printIp(s, " IP gw   :", setup2.IP_GatewayAddress);
+	puts(s);
+	printIp(s, " IP mask :", setup2.IP_SubnetMask);
+	puts(s);
+	sprintf(s, " LocalPort : %d  DestPort : %d\n", setup2.localPort, setup2.destPort);
+	puts(s);
+#endif	
 }                          
+
 
 #ifdef DEBUG_INIT  	
 void printMemoryInfo(void)

@@ -8,6 +8,7 @@
 #include "data_buffers.h"
 #include "version.h"
 #include "data.h"
+#include "nv_parameters.h"
 
 
 TDevice_Parameters Parameters;
@@ -17,7 +18,7 @@ bool TDevice_Parameters::__write(uint16_t n, int32_t v)
 {        
   bool rc = false;
   int32_t __v = v;
-//  int32_t i;
+  int32_t i;
 
   if(n >= data_buffers::kMinParameter  &&  n <= data_buffers::kMaxParameter)
   {
@@ -28,6 +29,12 @@ bool TDevice_Parameters::__write(uint16_t n, int32_t v)
 		// продолжить обработку в главном switch
   } 
 
+  if(n >= 100  &&  n < (100 + LINK1_SLAVES_N))
+  {
+  	setup3.slaves[n - 100] = v;
+  	return true;
+  } 
+
 	switch(n)
 	{
 		default: return rc;
@@ -35,57 +42,45 @@ bool TDevice_Parameters::__write(uint16_t n, int32_t v)
     case 2:
       if(R14 == (R14_MASK_WR_REG | 2))
       {
-//        setup1.serialNumber = v;
+        setup1.serialNumber = v;
         R14 = 0;
       }
       else return false;
       break;
 
-    case 3:
-//      setup1.netAddress = v;
-//      serviceFlags.cmdAcceptSAddress = 1;   // обрабатываетс€ в TsMonitor
-      break;
-
-		case 4:
-/*			switch(v)
-			{
-				default: return false;
-				case 1200: case 2400: case 4800: case 9600: case 19200:
-				case 38400: case 57600: case 115200: case 230400:
-          if(n == 4)
-          {
-            serviceFlags.cmdAcceptRs485Baud = 1;
-            setup2.baud = v;
-          }
-          else
-          {
-            supervisor.activateTask(task_SetupIOConfig);     
-            sendMessage(grpRegisterIO, msgSetupIOConfig, n, v); 
-          }
-					break;
-			} */
-			break;
-		
+    // R3 R4 только дл€ чтени€ дл€ совместимости с DataIOTool
+    // «апись сетевых настроек через R60+ 
+      
     case 14:
     	R14 = v; 
     	break;
 
     case 15:
-/*      if(R14 == 0xB2)
+    	if(R14 == 0xB2)
+			{
+				R15 = v;
+				R14 = 0;
+
+				if((uint32_t)v == 0x84000000)			// reset device
+					hal::reset();
+			}
+    	break;
+
+    	/*      if(R14 == 0xB2)
       {
         R15 = v;
         R14 = 0;
 
-        if(     (uint32_t)v == 0x88000000)
+        if((uint32_t)v == 0x88000000)
         {
-          shutdownSystem(kOffLed_L0R_1s, HAL::kPD_modeOff, 4);    // выключение
+          shutdownSystem(kOffLed_L0R_1s, HAL::kPD_modeOff, 4);  // выключение
           return false;
         }
         else if((uint32_t)v == 0x84000000)
           HAL::reset();                                         // reset
         else if((uint32_t)v == 0x82000000)
         {
-          shutdownSystem(kOffLed_L0R_1s, HAL::kPD_modeWOR, 5);    // WOR
+          shutdownSystem(kOffLed_L0R_1s, HAL::kPD_modeWOR, 5);  // WOR
           return false;
         }
         else if((uint32_t)v == 0x82100000)                    // delayed sleep/WOR
@@ -110,8 +105,8 @@ bool TDevice_Parameters::__write(uint16_t n, int32_t v)
           v = R15 / R14;
         }
       }
-      else return false; */
-      break;
+      else return false;
+      break; */
 
     case 19:
       // ѕроверка разрешени€ дл€ критических операций
@@ -139,6 +134,32 @@ bool TDevice_Parameters::__write(uint16_t n, int32_t v)
       }
       else
         return false; */
+      break;
+      
+    case 60: setup2.netAddrHi = v;     		break;
+    case 61: setup2.netAddrRs485_1 = v; 	break;
+    case 62: setup2.netAddrRs485_2 = v; 	break;
+    case 63: setup2.baudRs232 = v; 				break;
+    case 64: setup2.baudRs485_1 = v; 			break;
+    case 65: setup2.baudRs485_2 = v; 			break;
+    case 66: setup2.IP_HostAddress = v; 	break;
+    case 67: setup2.IP_GatewayAddress = v;	break;
+    case 68: setup2.IP_SubnetMask = v; 		break;
+    case 69: setup2.localPort = v; 				break;
+    case 70: setup2.destPort = v; 				break;
+    
+    case 99:
+      i = v & 0x00FF;                         // номер блока с 1
+      if(i <= NUM_NV_BLOCKS)
+      {
+				if(v & 0x100)       
+					nv_parameters::load(i, &R99);         // загрузка блока из NV пам€ти
+				else if(v & 0x200)  
+					nv_parameters::save(i, &R99);         // сохранение блока в NV пам€ти
+				else
+					return false;
+      }
+      else return false;      
       break;
 	}
   return true;
@@ -168,6 +189,12 @@ bool TDevice_Parameters::__read(uint16_t n, int32_t* v)
 		else
 		  return false;
   } 
+  
+  if(n >= 100  &&  n < (100 + LINK1_SLAVES_N))
+  {
+  	*v = setup3.slaves[n - 100];
+  	return true;
+  } 
 
   switch(n)
 	{
@@ -175,17 +202,33 @@ bool TDevice_Parameters::__read(uint16_t n, int32_t* v)
 
 		case 0: *v = DEVICE_ID;		break;
 		case 1: *v = VERSION_N;		break;
-//    case 2: *v = setup1.serialNumber;   break;
-//    case 3: *v = setup1.netAddress;     break;
-//		case 4:	*v = setup2.baud;						break;
-		case 2: *v = DEFAULT_SERIAL_NUMBER;   break;
-		case 3: *v = DEFAULT_NET_ADDRESS_HI_IO;     break;
-		case 4:	*v = UART1_BAUD;							break;
+    case 2: *v = setup1.serialNumber;		break;
+    
+    // R3 R4 дл€ совместимости с DataIOTool
+    case 3: *v = setup2.netAddrHi;     	break;
+		case 4:	*v = setup2.baudRs485_1;		break;
 
-    case 14:  *v = R14;   break;
-    case 15:  *v = R15;		break;
+    case 14: *v = R14;   	break;
+    case 15: *v = R15;		break;
 
-    case 21:  *v = now;		break;
+    case 21: *v = now;		break;
+    
+    case 60: *v = setup2.netAddrHi;     	break;
+    case 61: *v = setup2.netAddrRs485_1; 	break;
+    case 62: *v = setup2.netAddrRs485_2; 	break;
+    case 63: *v = setup2.baudRs232; 			break;
+    case 64: *v = setup2.baudRs485_1; 		break;
+    case 65: *v = setup2.baudRs485_2; 		break;
+    case 66: *v = setup2.IP_HostAddress; 	break;
+    case 67: *v = setup2.IP_GatewayAddress;	break;
+    case 68: *v = setup2.IP_SubnetMask; 	break;
+    case 69: *v = setup2.localPort; 			break;
+    case 70: *v = setup2.destPort; 				break;
+    
+    case 90:  *v = LINK1_SLAVES_N;		break;
+    case 91:  *v = DATA_BUFFERS_N;		break;
+
+    case 99:  *v = R99;		break;
 	}
 	return true;
 }

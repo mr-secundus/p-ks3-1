@@ -7,3 +7,4 @@ Debug/makefile
 Debug/**/*.*
 
 /src/ts_read_data.cpp
+/Debug/

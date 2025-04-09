@@ -11,11 +11,9 @@
 // 3) ¬ двух последних байтах блока размещаетс€ CRC16.
 
 
-#include <putx.h>
-
+//#include <putx.h>
 #include <crc16.h>
-#include <data.h>
-
+#include "data.h"
 #include "nv_parameters.h"
 
 
