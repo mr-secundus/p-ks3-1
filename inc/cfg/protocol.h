@@ -32,5 +32,6 @@
 
 // Макс. размер прикладных данных в выходном пакете для разных вариантов
 #define MAX_TX_APP_SIZE_DATAIO				(TProtocol::MaxPacketPayload)			// RS485
-#define MAX_TX_APP_SIZE_DATAIO_APP		1472															// UDP
+//#define MAX_TX_APP_SIZE_DATAIO_APP		1472															// UDP
+#define MAX_TX_APP_SIZE_DATAIO_APP		1440															// UDP
 

@@ -34,8 +34,6 @@
 #include "udp_io/udp_io_cfg.h"
 
 
-//#define DEBUG_UDP_IO
-
 //-----------------------------------------------------------------------------
 //                                 Defines
 //-----------------------------------------------------------------------------
@@ -128,16 +126,6 @@ TBuffersPool udpBuffers(udpPBuffers, udpPState, UDP_BUFFERS_N);
   */
 void udp_receive_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
 {
-	// Если пришел пакет с нового адреса, или udp_conn_tx_data еще не создано
-	if(udp_io::txData.raddr.addr != addr->addr  ||  !udp_io::txData.connected)
-	{
-		// запомнить адрес отправителя пакета
-		udp_io::txData.raddr.addr = addr->addr;
-		
-		// при дальнейшей передаче выполнить connect
-		udp_io::txData.update = true;							
-	}
-
 #ifdef DEBUG_UDP_IO
 puts(">> udp_rcv len:"); putd(p->len); putc('\n');
 
@@ -156,6 +144,22 @@ sprintf(sbuf, " arg:%lx upcb:%lx flags:%x recv:%lx p:%lx\n\n",
 				(uint32_t)arg, (uint32_t)upcb, upcb->flags, (uint32_t)upcb->recv, (uint32_t)p);
 puts(sbuf);
 #endif
+
+	udp_connect(upcb, addr, 4023);
+	udp_send(upcb, p);
+	udp_disconnect(upcb);
+	pbuf_free(p);
+	return;
+
+	// Если пришел пакет с нового адреса, или udp_conn_tx_data еще не создано
+	if(udp_io::txData.raddr.addr != addr->addr  ||  !udp_io::txData.connected)
+	{
+		// запомнить адрес отправителя пакета
+		udp_io::txData.raddr.addr = addr->addr;
+		
+		// при дальнейшей передаче выполнить connect
+		udp_io::txData.update = true;							
+	}
 
 	// Создать объект с указателем на данные и доп. информацией.
 	// p используется при освобождении буфера
@@ -334,6 +338,19 @@ uint32_t send(UdpData *data)
 			pbuf_take(txData.pbuffer, data->buffer, data->size);
 
 			rc = udp_send(txData.upcb, txData.pbuffer);
+			
+#ifdef DEBUG_UDP_IO
+			puts(" send sz:"); putd(data->size); 
+
+			sprintf(sbuf, " dest:%s/%d\n", ipaddr_ntoa_r((const ip_addr_t *) &txData.raddr, tmp_buff, 16),  rport);
+			puts(sbuf);
+
+			if(rc != ERR_OK)
+			{
+				puts("  error:"); putd(rc);
+			}
+			puts("\n");
+#endif			
 			
 			if(rc == ERR_OK)
 				return data->size;

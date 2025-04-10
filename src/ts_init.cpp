@@ -114,8 +114,8 @@ void TTaskInit::process(void)
 //			printMemoryInfo();
 #endif
 			loadNvData();      
-//			Protocol::init(DEFAULT_NET_ADDRESS_HI_IO, 1, 1);
-			Protocol::init(setup2.netAddrHi, setup2.netAddrRs485_1, setup2.netAddrRs485_2);
+			Protocol::init(DEFAULT_NET_ADDRESS_HI_IO, 1, 1);
+//			Protocol::init(setup2.netAddrHi, setup2.netAddrRs485_1, setup2.netAddrRs485_2);
 			timer = now;
 			state = 2;
 			break;                                                           

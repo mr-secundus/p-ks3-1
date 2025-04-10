@@ -11,8 +11,6 @@
 
 //	#define DEBUG_TASKS									// вывод инф. при активации/деактивации задач
 	
-//	#define DEBUG_NVDATA_APP
-	
 //	#define DEBUG_LOWIO_IN
 //	#define DEBUG_LOWIO_OUT
 //	#define DEBUG_APPIO_OUT 
@@ -25,15 +23,14 @@
 
 //	#define DEBUG_TX_BUFFERS						// передача данных АЦП
 	
-	#define DEBUG_EMAC_APP							// EMAC и сетевой стек - уровень приложения 
+//	#define DEBUG_EMAC_APP							// EMAC и сетевой стек - уровень приложения 
 //	#define DEBUG_EMAC_SERVICE					// задача контроля состояния подключения
 
-//	#define DEBUG_UDP_RX  							// UDP low rx
-	#define DEBUG_UDP_TX  							// UDP low tx
-//	#define DEBUG_UDP_RX_APP  					// только размер принятых пакетов 
-//	#define DEBUG_UDP_TX_APP  					// только размер выходного пакета 
-
-//	#define DEBUG_ADC1B_DATA						// ADC1_Buffers - обработка данных
+	#define DEBUG_UDP_IO								// UDP low IO
+//	#define DEBUG_UDP_RX  							// UDP rx queue
+//	#define DEBUG_UDP_TX  							// UDP tx queue
+	#define DEBUG_UDP_RX_APP  					// только размер принятых пакетов 
+	#define DEBUG_UDP_TX_APP  					// только размер выходного пакета 
 	
 #else 
 	#ifdef	DEBUG_INIT
