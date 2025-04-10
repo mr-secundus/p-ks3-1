@@ -148,7 +148,11 @@ void TTaskMAC_Service::process(void)
 			break;
 
 		case kStInitStart:						// запуск инициализации
-			sendMessage(grpNet, msgNetInitStart); 
+			sendMessage(grpNet, msgNetInitStart);
+			
+			hal::setEthPhyReset(true);
+			hal::delay(2);
+			hal::setEthPhyReset(false);
 
 			emac_app::setMacAddress(DEFAULT_MAC_HI, DEFAULT_MAC_LO | (DEFAULT_SERIAL_NUMBER & 0xFFFF));
 			emac_app::setIpAddress(DEFAULT_IP, DEFAULT_GW, DEFAULT_SMASK);

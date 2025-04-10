@@ -39,6 +39,8 @@
 #include "chip.h"
 #include "lpc_phy.h"
 
+//#define DEBUG_ETH_PHY
+
 #ifdef DEBUG_ETH_PHY
 #include "putx.h"
 
@@ -283,7 +285,14 @@ uint32_t lpc_phy_init(bool rmii, p_msDelay_func_t pDelayMsFunc)
 }
 
 #else 
-
+//
+// Отладочный вариант инициализации PHY.
+// Выполняется вывод по отдельным операциям инициализации PHY и
+// установки режима соединения.
+//
+// На плате концентратора КС3 с KSZ8031 выполняется иниццализация и 
+// определение статуса линка, но связь не работает - ???
+//
 uint32_t lpc_phy_init(bool rmii, p_msDelay_func_t pDelayMsFunc)
 {
 	uint16_t regv, tout;
@@ -291,12 +300,15 @@ uint32_t lpc_phy_init(bool rmii, p_msDelay_func_t pDelayMsFunc)
 	uint32_t id1, id2;
 
 	putdw(SysTick_GetMS());
-	puts(" phy : lpc_phy_init() start...  ");
+	puts(" phy : lpc_phy_init() start...\n");
 	
 	pDelayMs = pDelayMsFunc;
 
 	// Initial states for PHY status and state machine
 	olddphysts = physts = phyustate = 0;
+	
+//	Chip_RGU_TriggerReset(RGU_ETHERNET_RST);
+//	while(Chip_RGU_InReset(RGU_ETHERNET_RST)) {};
 
 	lpc_mii_write(PHY_REG_ANAR, 0x0F << 5);
 	lpc_mii_write(PHY_REG_BMCR, 0x01 << 12 );
@@ -322,7 +334,8 @@ uint32_t lpc_phy_init(bool rmii, p_msDelay_func_t pDelayMsFunc)
 	if(i == 0)			// Timeout 
 	{
 		putdw(SysTick_GetMS());
-		puts(" timeout\n");
+		puts(" timeout");
+		puts(" BCR_REG : 0x"); putdwx_zs(regv); puts("\n");
 		return ERROR;
 	}
 	
@@ -335,8 +348,8 @@ uint32_t lpc_phy_init(bool rmii, p_msDelay_func_t pDelayMsFunc)
 	putdwx_zs((id1 << 16) | (id2 & 0xFFF0));
 	puts("\n");
 	
-#if !MII
-	lpc_mii_write(PHY_REG_RBR, 0x20);		// RMII mode
+#ifdef USE_RMII
+//	lpc_mii_write(PHY_REG_RBR, 0x20);		// RMII mode
 #endif
 
 	putdw(SysTick_GetMS());

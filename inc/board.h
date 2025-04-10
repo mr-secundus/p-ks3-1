@@ -38,6 +38,18 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+	
+//-----------------------------------------------------------------------------	
+//                                 Board type
+//-----------------------------------------------------------------------------	
+
+// Опытный образец платы ks3 - схема c0
+//#define BOARD_REVISION_C0			
+	
+
+//-----------------------------------------------------------------------------	
+//                                Misc. settings
+//-----------------------------------------------------------------------------	
 
 /** Define DEBUG_ENABLE to enable IO via the DEBUGSTR, DEBUGOUT, and
 		DEBUGIN macros. If not defined, DEBUG* functions will be optimized
@@ -50,11 +62,33 @@ extern "C" {
 #define USE_RMII
 #define BOARD_ENET_PHY_ADDR	0x00
 
+	
+//-----------------------------------------------------------------------------	
+//                                  GPIO pins
+//-----------------------------------------------------------------------------	
 
-#define LED1_GPIO_PORT_NUM              1
-#define LED1_GPIO_BIT_NUM               11
-#define LED2_GPIO_PORT_NUM              1
-#define LED2_GPIO_BIT_NUM               12
+#define LED0_GPIO_PORT    2      
+#define LED0_GPIO_BIT     4
+#define LED1_GPIO_PORT		2
+#define LED1_GPIO_BIT     5
+#define LED2_GPIO_PORT    2
+#define LED2_GPIO_BIT     6
+#define LED3_GPIO_PORT    5
+#define LED3_GPIO_BIT     12
+	
+#ifdef BOARD_REVISION_C0
+	// Опытный образец платы ks3
+	#define PHY_RST_PORT				0x9
+	#define PHY_RST_BIT			  		6
+	#define PHY_RST_GPIO_PORT		  4
+	#define PHY_RST_GPIO_BIT		 11
+#else 
+	#define PHY_RST_PORT				0x1
+	#define PHY_RST_BIT			  		3
+	#define PHY_RST_GPIO_PORT		  0
+	#define PHY_RST_GPIO_BIT		 10
+#endif
+
 
 #include "board_api.h"
 

@@ -43,9 +43,20 @@ extern volatile uint32_t ticks;
 		return ticks2 + (0xFFFFFFFF - ticks1);
 } */
 
+
+// ”станавливает состо€ние сигнала RESET дл€ ETH PHY
+//
+// st		true/false - Reset on/off
+void setEthPhyReset(bool st);
+
+// ”становить состо€ние выхода управлени€ индикатором
+//
+// LEDNumber		kLed0 .. kLed3
+// st						true/false
+void setLed(uint8_t LEDNumber, bool st);
+
 void reset(void);
 void delay(uint32_t ms);
-void setLed(uint8_t LEDNumber, bool st);
 void init(void);
 void process(void);
 	

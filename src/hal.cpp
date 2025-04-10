@@ -2,6 +2,7 @@
 #include "hal.h"
 #include "hal_uarts.h"
 #include "cfg/defines.h"
+#include "board.h"
 
 //-----------------------------------------------------------------------------
 //                                Data
@@ -57,16 +58,21 @@ const PINMUX_GRP_T pinmuxing[] =
 //	{0x6, 11, (SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | SCU_MODE_FUNC0)},
 //	{0x2,  7, (SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | SCU_MODE_FUNC0)},
 
-	/* ENET Pin mux (RMII Pins) */
-	{0x1, 18, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC3)}, /* TXD0 */
-	{0x1, 20, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC3)}, /* TXD1 */
-	{0x0,  1, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC6)}, /* TXEN */
-	{0x1, 15, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC3)}, /* RXD0 */
-	{0x0,  0, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC2)},  /* RXD1 */
-	{0x1, 16, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC7)}, /* CRS_DV */
-	{0x1, 17, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC3)}, /* MDIO */
-	{0x2,  0, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC7)}, /* MDC */
-	{0x1, 19, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0)}, /* REFCLK */
+	// PHY reset
+  {PHY_RST_PORT, PHY_RST_BIT, SCU_MODE_FUNC0}, 	
+
+	// Внимание! Подключение некоторых сигналов отличается от платы SK4337
+	//
+	// ENET Pin mux (RMII Pins) 
+	{0x1, 18, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC3)}, //+ TXD0
+	{0x1, 20, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC3)}, //+ TXD1
+	{0x0,  1, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC6)}, //+ TXEN
+	{0x1, 15, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC3)}, //+ RXD0
+	{0x0,  0, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC2)}, //+ RXD1
+	{0x1, 16, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC7)}, //+ RX_DV
+	{0x1, 17, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC3)}, //+ MDIO
+	{0x7,  7, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC6)}, //+ MDC
+	{0x1, 19, (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0)}, //+ REFCLK
 };
 
 typedef struct
@@ -75,7 +81,11 @@ typedef struct
 	uint8_t pin;
 } io_port_t;
 
-static const io_port_t gpioLEDBits[] = {{3, 2}, {4, 5}, {4, 6}, {4, 8}};
+static const io_port_t gpioLEDBits[] = 
+{
+	{LED0_GPIO_PORT, LED0_GPIO_BIT}, {LED1_GPIO_PORT, LED1_GPIO_BIT},
+	{LED2_GPIO_PORT, LED2_GPIO_BIT}, {LED3_GPIO_PORT, LED3_GPIO_BIT}
+};
 
 volatile uint32_t ticks = 0;
 
@@ -122,15 +132,18 @@ void setupClocking(void)
 }
 
 
-//
-void initLed()
+// Инициализация дискретных выходов
+void initGpio()
 {
-	uint32_t idx;
-	for (idx = 0; idx < (sizeof(gpioLEDBits) / sizeof(io_port_t)); ++idx) 
+	// LED's
+	for(uint32_t idx = 0; idx < (sizeof(gpioLEDBits) / sizeof(io_port_t)); ++idx) 
 	{
 		Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpioLEDBits[idx].port, gpioLEDBits[idx].pin);
-		Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpioLEDBits[idx].port, gpioLEDBits[idx].pin, (bool) true);
+		Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpioLEDBits[idx].port, gpioLEDBits[idx].pin, false);
 	}
+	
+	// PHY Reset
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, PHY_RST_GPIO_PORT, PHY_RST_GPIO_BIT);
 }
 	
 
@@ -167,7 +180,20 @@ void delay(uint32_t ms)
 }
 
 
+// Устанавливает состояние сигнала RESET для ETH PHY
 //
+// st		true/false - Reset on/off
+void setEthPhyReset(bool st)
+{
+	// PHY reset active low
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, PHY_RST_GPIO_PORT, PHY_RST_GPIO_BIT, !st);
+}
+
+
+// Установить состояние выхода управления индикатором
+//
+// LEDNumber		kLed0 .. kLed3
+// st						true/false
 void setLed(uint8_t LEDNumber, bool st)
 {
 	if (LEDNumber < (sizeof(gpioLEDBits) / sizeof(io_port_t)))
@@ -187,14 +213,15 @@ void init(void)
   Chip_GPIO_Init(LPC_GPIO_PORT);
   Chip_ENET_RMIIEnable(LPC_ETHERNET);
 	
-  hal::uarts::init();
-
-	initLed();
+  setEthPhyReset(false);
+	initGpio();
 	
 	setLed(kLed0, false);
 	setLed(kLed1, false);
 	setLed(kLed2, false);
 	setLed(kLed3, false);
+	
+  hal::uarts::init();
 }
 
 
