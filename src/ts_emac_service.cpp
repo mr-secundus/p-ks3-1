@@ -11,11 +11,11 @@
 
 #include "taskdef.h"
 #include "hal.h"
-//#include "tparameters.h"
 #include "cfg/defines.h"
 #include "debug.h"
 #include "emac_app.h"
 #include "cfg/default_ip_parameters.h"
+#include "data.h"
 
 #define TM_MAC_INIT_TIMEOUT		 8000			// таймаут ожидания инициализации MAC
 #define TM_MAC_CONTROL_LINK		   20			// период контроля состояния линка
@@ -154,8 +154,8 @@ void TTaskMAC_Service::process(void)
 			hal::delay(2);
 			hal::setEthPhyReset(false);
 
-			emac_app::setMacAddress(DEFAULT_MAC_HI, DEFAULT_MAC_LO | (DEFAULT_SERIAL_NUMBER & 0xFFFF));
-			emac_app::setIpAddress(DEFAULT_IP, DEFAULT_GW, DEFAULT_SMASK);
+			emac_app::setMacAddress(DEFAULT_MAC_HI, DEFAULT_MAC_LO | (setup1.serialNumber & 0xFFFF));
+			emac_app::setIpAddress(setup2.IP_HostAddress, setup2.IP_GatewayAddress, setup2.IP_SubnetMask);
 			emac_app::init();
 			
 			setState(kStInitWait);

@@ -114,8 +114,8 @@ void TTaskInit::process(void)
 //			printMemoryInfo();
 #endif
 			loadNvData();      
-			Protocol::init(DEFAULT_NET_ADDRESS_HI_IO, 1, 1);
-//			Protocol::init(setup2.netAddrHi, setup2.netAddrRs485_1, setup2.netAddrRs485_2);
+//			Protocol::init(DEFAULT_NET_ADDRESS_HI_IO, 1, 1);
+			Protocol::init(setup2.netAddrHi, setup2.netAddrRs485_1, setup2.netAddrRs485_2);
 			timer = now;
 			state = 2;
 			break;                                                           
@@ -157,12 +157,12 @@ void printIp(char *s, char const *msg, uint32_t ip)
 void loadNvData(void)
 {
 	initSetup2DefaultValues(&setup2);
-	
+
 	nv_parameters::init();
 
 	for(uint16_t i=1; i<=NUM_NV_BLOCKS; i++)
 	{
-			nv_parameters::rc_t rc = nv_parameters::load(i, &R99);
+		nv_parameters::rc_t rc = nv_parameters::load(i, &R99);
 #ifdef DEBUG_INIT  	
 		puts(" nv_parameters::load("); putd(i); puts(") : ");
 //		putd(rc);
@@ -174,6 +174,11 @@ void loadNvData(void)
 			case nv_parameters::rcNotReady:		puts("NotReady\n");	break;
 			case nv_parameters::rcCrcError:		puts("CrcError\n");	break;
 			case nv_parameters::rcInvalidData:puts("InvalidData\n");	break;
+		}
+#else		
+		if(rc != nv_parameters::rcOk)
+		{
+			puts(" nv_parameters::load("); putd(i); puts(") error rc : "); putd(rc); puts("\n");				
 		}
 #endif
   }

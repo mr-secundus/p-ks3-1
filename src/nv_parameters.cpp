@@ -11,11 +11,10 @@
 // 3) В двух последних байтах блока размещается CRC16.
 
 
-//#include <putx.h>
+#include <putx.h>
 #include <crc16.h>
 #include "data.h"
 #include "nv_parameters.h"
-
 
 // Номера страниц EEPROM для блоков параметров 
 #define PG_SETUP1				0
@@ -117,7 +116,7 @@ rc_t load(uint16_t id, uint32_t* opResult)
 	
 	rc_t rc = getAttributes(id, &address, &size, (uint8_t**)&p);
 	if(rc != rcOk) return rc;
-	
+
 	// Чтение из EEPROM в buffer
 	uint32_t *pEeprom = (uint32_t*)address;
 	for(int i = 0; i < size/4; i++)
@@ -126,16 +125,18 @@ rc_t load(uint16_t id, uint32_t* opResult)
 	crc = calcBlockCRC16i((uint8_t*)buffer, size - sizeof(uint16_t), crc);
 
 	// Сохраненное crc16 в двух последних байтах блока
-	if(crc != *reinterpret_cast<uint16_t*>(&buffer[size-sizeof(uint16_t)]))
+	if(crc != *(uint16_t*)((uint8_t*)buffer + size - sizeof(uint16_t)))
 	{
 		if(opResult != nullptr)
+		{
 			*opResult |= getBlockMaskRead(id);
-		return rcCrcError;
+			return rcCrcError;
+		}
 	}
 
 	// Скопировать из bufer в блок параметров
-	for(int i = 0; i < size/4; i++)
-		*p++ = buffer[i];
+	for(int i = 0; i < size/4; i++, p++)
+		*p = buffer[i];
 	
 	if(opResult != nullptr)
 		*opResult &= ~getBlockMaskRead(id);	// успешное завершение - сбросить флаг ошибки
@@ -162,20 +163,16 @@ rc_t save(uint16_t id, uint32_t* opResult)
 
 	crc = calcBlockCRC16i((uint8_t*)p, size - sizeof(uint16_t), crc);
 
-	*(reinterpret_cast<uint16_t*>(&p[size - sizeof(uint16_t)])) = crc;
+	*(uint16_t*)((uint8_t*)p + size - sizeof(uint16_t)) = crc;
 
 	uint32_t *pEeprom = (uint32_t*)address;
-	
-	// Erase EEPROM
-/*	for(int i = 0; i < size/4; i++)
-	{
-		pEeprom[i] = 0;
-		Chip_EEPROM_WaitForIntStatus(LPC_EEPROM, EEPROM_INT_ENDOFPROG);
-	} */
-	
-	// Write to EEPROM
+
 	for(int i = 0; i < size/4; i++)
 	{
+		// Erase EEPROM
+		pEeprom[i] = 0;
+		Chip_EEPROM_WaitForIntStatus(LPC_EEPROM, EEPROM_INT_ENDOFPROG);
+		// Write to EEPROM
 		pEeprom[i] = *p++;
 		Chip_EEPROM_WaitForIntStatus(LPC_EEPROM, EEPROM_INT_ENDOFPROG);
 	}
@@ -185,38 +182,5 @@ rc_t save(uint16_t id, uint32_t* opResult)
 	return rcOk;
 }
 
-
-// Проверка соответствия текущего значения блока NV параметров сохраненным значениям.
-//
-// id				идентификатор блока
-// return		true   1) блок данных изменен; 2) ошибка при чтении блока из NV памяти
-//					false  1) блок данных не изменен; 2) некорректный идентификатор блока
-/*bool isModified(uint16_t id)
-{ 
-	uint8_t buffer[kBufferSize], *p;
-	uint32_t address;
-	uint16_t size, crc=nvdata::kInitCrc;
-
-	rc_t rc = getAttributes(id, &address, &size, &p);
-	if(rc != rcOk) return false;
-
-	lowIo->fastSetup();
-	lowIo->Read(address, buffer, size);
-
-	crc = calcBlockCRC16i(buffer, size-sizeof(uint16_t), crc);
-
-	// Сохраненное crc16 в двух последних байтах блока
-	if(crc != *reinterpret_cast<uint16_t*>(&buffer[size - sizeof(uint16_t)]))
-		return true;
-
-	// Сравнение buffer с исходной структурой, не включая crc16
-	for(int i=0; i<size-sizeof(uint16_t); i++)
-		if(*p++ != buffer[i])
-			return true;
-
-	return false;
-}*/
-
 };		// namespace
-
 

@@ -6,10 +6,10 @@
 #include "cfg/defines.h"
 #include "hal.h"
 #include "debug.h"
-//#include "types.h"
 #include "protocol/protocol.h"
 #include "cfg/default_ip_parameters.h"
 #include "udp_io/udp_io_if.h"
+#include "data.h"
 
 
 // упаковка октетов в uint32_t
@@ -175,10 +175,7 @@ void TTaskUDP_Service::process(void)
 		default: break;
 			
 		case kStInit:                           
-//			if(UDP_IO::init(DEFAULT_MAC_HI, DEFAULT_MAC_LO | (DEFAULT_SERIAL_NUMBER & 0xffff), 
-//					setup1.IP_HostAddress, setup1.IP_GatewayAddress, setup1.IP_SubnetMask, setup1.localPort, setup1.destPort) == 0)
-//					DEFAULT_IP, DEFAULT_GW, DEFAULT_SMASK, DEFAULT_LOCAL_PORT, DEFAULT_DEST_PORT) == 0)
-			if(udp_io::init(DEFAULT_LOCAL_PORT, DEFAULT_DEST_PORT) == udp_io::kRcOk)
+			if(udp_io::init(setup2.localPort, setup2.destPort) == udp_io::kRcOk)
 			{
 				netState.UDP_initOk = true;
 				state = kStInitOk;
