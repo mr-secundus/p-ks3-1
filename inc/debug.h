@@ -26,11 +26,11 @@
 //	#define DEBUG_EMAC_APP							// EMAC и сетевой стек - уровень приложения 
 //	#define DEBUG_EMAC_SERVICE					// задача контроля состояния подключения
 
-	#define DEBUG_UDP_IO								// UDP low IO
+//	#define DEBUG_UDP_IO								// UDP low IO
 //	#define DEBUG_UDP_RX  							// UDP rx queue
 //	#define DEBUG_UDP_TX  							// UDP tx queue
-	#define DEBUG_UDP_RX_APP  					// только размер принятых пакетов 
-	#define DEBUG_UDP_TX_APP  					// только размер выходного пакета 
+//	#define DEBUG_UDP_RX_APP  					// только размер принятых пакетов 
+//	#define DEBUG_UDP_TX_APP  					// только размер выходного пакета 
 	
 #else 
 	#ifdef	DEBUG_INIT

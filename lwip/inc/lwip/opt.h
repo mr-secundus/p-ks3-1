@@ -129,8 +129,7 @@
  * a lot of data that needs to be copied, this should be set high.
  */
 #ifndef MEM_SIZE
-//#define MEM_SIZE                        1600
-#define MEM_SIZE                        3200
+#define MEM_SIZE                        1600
 #endif
 
 /**
@@ -241,7 +240,7 @@
  * (requires the LWIP_UDP option)
  */
 #ifndef MEMP_NUM_UDP_PCB
-#define MEMP_NUM_UDP_PCB                6
+#define MEMP_NUM_UDP_PCB                4
 #endif
 
 /**

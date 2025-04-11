@@ -145,11 +145,13 @@ sprintf(sbuf, " arg:%lx upcb:%lx flags:%x recv:%lx p:%lx\n\n",
 puts(sbuf);
 #endif
 
+/*
+  // echo
 	udp_connect(upcb, addr, 4023);
 	udp_send(upcb, p);
 	udp_disconnect(upcb);
 	pbuf_free(p);
-	return;
+	return; */
 
 	// Если пришел пакет с нового адреса, или udp_conn_tx_data еще не создано
 	if(udp_io::txData.raddr.addr != addr->addr  ||  !udp_io::txData.connected)
@@ -342,7 +344,7 @@ uint32_t send(UdpData *data)
 #ifdef DEBUG_UDP_IO
 			puts(" send sz:"); putd(data->size); 
 
-			sprintf(sbuf, " dest:%s/%d\n", ipaddr_ntoa_r((const ip_addr_t *) &txData.raddr, tmp_buff, 16),  rport);
+			sprintf(sbuf, " dest:%s/%d", ipaddr_ntoa_r((const ip_addr_t *) &txData.raddr, tmp_buff, 16),  rport);
 			puts(sbuf);
 
 			if(rc != ERR_OK)
