@@ -44,10 +44,21 @@ extern volatile uint32_t ticks;
 } */
 
 
-// Устанавливает состояние сигнала RESET для ETH PHY
+// Установить состояние сигнала RESET для ETH PHY
 //
 // st		true/false - Reset on/off
 void setEthPhyReset(bool st);
+
+// Установить состояние выхода управления драйвером RS485-1
+//
+// st		true/false - on/off
+void setUart1dir(bool st);
+
+// Установить состояние выхода управления индикатором
+//
+// LEDNumber		kLed0 .. kLed3
+// st						true/false
+void setLed(uint8_t LEDNumber, bool st);
 
 // Установить состояние выхода управления индикатором
 //

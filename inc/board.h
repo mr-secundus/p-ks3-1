@@ -44,7 +44,7 @@ extern "C" {
 //-----------------------------------------------------------------------------	
 
 // Опытный образец платы ks3 - схема c0
-//#define BOARD_REVISION_C0			
+#define BOARD_REVISION_C0			
 	
 
 //-----------------------------------------------------------------------------	
@@ -67,26 +67,49 @@ extern "C" {
 //                                  GPIO pins
 //-----------------------------------------------------------------------------	
 
-#define LED0_GPIO_PORT    2      
-#define LED0_GPIO_BIT     4
-#define LED1_GPIO_PORT		2
-#define LED1_GPIO_BIT     5
-#define LED2_GPIO_PORT    2
-#define LED2_GPIO_BIT     6
-#define LED3_GPIO_PORT    5
-#define LED3_GPIO_BIT     12
-	
 #ifdef BOARD_REVISION_C0
 	// Опытный образец платы ks3
+	
+	// PHY reset
 	#define PHY_RST_PORT				0x9
 	#define PHY_RST_BIT			  		6
 	#define PHY_RST_GPIO_PORT		  4
 	#define PHY_RST_GPIO_BIT		 11
-#else 
+	
+	// Выход управления драйвером RS485-1
+	// На схеме подключен к PF.4 без GPIO. Напаяна перемычка на X1:3 - P7.0.
+	#define U1_DIR_GPIO_PORT			3			// P7.0			
+	#define U1_DIR_GPIO_BIT		  	13
+
+	#define LED0_GPIO_PORT    		2			// P4.4
+	#define LED0_GPIO_BIT     		4
+	#define LED1_GPIO_PORT				2			// P4.5 
+	#define LED1_GPIO_BIT     		5
+	#define LED2_GPIO_PORT    		2			// P4.6
+	#define LED2_GPIO_BIT     		6
+	// На опытном образце LED3 подключен к P4.7, который не имеет GPIO.
+	// Назначен на P3.1 (RD0) - выведен на X1::13.
+	#define LED3_GPIO_PORT    		5			// P3.1
+	#define LED3_GPIO_BIT     		8
+#else 																			// Рабочий
+	// PHY reset
 	#define PHY_RST_PORT				0x1
 	#define PHY_RST_BIT			  		3
 	#define PHY_RST_GPIO_PORT		  0
 	#define PHY_RST_GPIO_BIT		 10
+
+	// Выход управления драйвером RS485-1
+	#define U1_DIR_GPIO_PORT			3			// P7.5			
+	#define U1_DIR_GPIO_BIT		  	8
+
+	#define LED0_GPIO_PORT    		2			// P4.4
+	#define LED0_GPIO_BIT     		4
+	#define LED1_GPIO_PORT				2			// P4.5 
+	#define LED1_GPIO_BIT     		5
+	#define LED2_GPIO_PORT    		2			// P4.6
+	#define LED2_GPIO_BIT     		6
+	#define LED3_GPIO_PORT    		5			// P4.8
+	#define LED3_GPIO_BIT     		12
 #endif
 
 

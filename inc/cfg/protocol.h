@@ -8,7 +8,7 @@
 // передаются при вызове функций hal::uarts::
 //
 #define LINK_ID_HI_IO				9			// связь с ВУ по UDP
-#define LINK_ID_LOCAL				3			// опрос ведомых устройств - RS485-1
+#define LINK_ID_LOCAL				1			// опрос ведомых устройств - RS485-1
 
 
 // default сетевые адреса интерфейсов связи

@@ -35,16 +35,8 @@ const PINMUX_GRP_T pinmuxing[] =
 	// TXD1	P3.4	P3.4	Tx RS485-1
 	// RXD1	P3.5	P3.5	Rx RS485-1
 	//      P7.5	P7.0	DE RS485-1     GPIO3.13    P7.5 на опытной плате
-	// 
-	// На схеме выход управления драйвером RS485-1 (RTS1) подключен к P7.0, который можно 
-	// использовать только как GPIO. Аппаратный выход управления драйвером U3_DIR есть 
-	// на P4.4, который на схеме LED0. Решение - исправления на плате:
-	//   P4.4 -> RTS1
-	//   P3.2 -> LED0
-	//
 	{0x3, 4, (SCU_MODE_INACT | SCU_MODE_FUNC4)},
 	{0x3, 5, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC4)},
-	{0x4, 4, (SCU_MODE_INACT | SCU_MODE_FUNC6)},			// P4.4  U3_DIR
 	
 	//	TXD3	P4.1	P4.1	Tx   RS232
 	//	RXD3	P4.2	P4.2	Rx   RS232
@@ -144,6 +136,9 @@ void initGpio()
 	
 	// PHY Reset
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, PHY_RST_GPIO_PORT, PHY_RST_GPIO_BIT);
+	
+	// RS485-1 driver enable
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, U1_DIR_GPIO_PORT, U1_DIR_GPIO_BIT);
 }
 	
 
@@ -180,13 +175,22 @@ void delay(uint32_t ms)
 }
 
 
-// Устанавливает состояние сигнала RESET для ETH PHY
+// Установить состояние сигнала RESET для ETH PHY
 //
 // st		true/false - Reset on/off
 void setEthPhyReset(bool st)
 {
 	// PHY reset active low
 	Chip_GPIO_SetPinState(LPC_GPIO_PORT, PHY_RST_GPIO_PORT, PHY_RST_GPIO_BIT, !st);
+}
+
+
+// Установить состояние выхода управления драйвером RS485-1
+//
+// st		true/false - on/off
+void setUart1dir(bool st)
+{
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, U1_DIR_GPIO_PORT, U1_DIR_GPIO_BIT, st);
 }
 
 
@@ -229,6 +233,17 @@ void init(void)
 void process(void)
 {
 	hal::uarts::process();
+	
+	static uint32_t tm = 0;
+	
+	if(TIMEOUT(tm, 20))
+	{
+		tm = now;
+		
+//		uint8_t data[11] = "1234567890\n"; 
+		uint8_t data[3] = "12"; 
+		uarts::write(1, data, 2);
+	}
 }
 
 };		// namespace hal

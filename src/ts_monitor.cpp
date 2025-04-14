@@ -43,7 +43,7 @@ void TTaskMonitor::handleEvent(TCMessage* msg)
 			break;
 
 		case msgNetConnected:
-			p_slave_data_io::start();
+//			p_slave_data_io::start();
       break;
 
 		case msgNetDisconnected:

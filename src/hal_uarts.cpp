@@ -1,7 +1,7 @@
 // hal_uarts.h
 
 #include "port.h"
-#include "hal_uarts.h"
+#include "hal.h"
 #include "cfg/defines.h"
 #include "cfg/protocol.h"
 #include "protocol/protocol.h"
@@ -26,7 +26,10 @@ namespace hal::uarts
 	constexpr RINGBUFF_T	*txBuffer_Rs232 = &txBuffer3;  
 	constexpr RINGBUFF_T	*rxBuffer_Rs232 = &rxBuffer3;  
 	constexpr RINGBUFF_T	*txBuffer_Rs485 = &txBuffer1;  
-	constexpr RINGBUFF_T	*rxBuffer_Rs485 = &rxBuffer1;  
+	constexpr RINGBUFF_T	*rxBuffer_Rs485 = &rxBuffer1;
+	
+	bool 	u1Last 	= false;		// флаг передачи последнего фиктивного байта по UART1 для управления
+														// драйвером RS485
 
 /*	
 #ifdef UART0_TX_SIZE
@@ -76,7 +79,54 @@ extern "C" void __puts(const char* s)
 
 extern "C" void UART1_IRQHandler(void)
 {
-	Chip_UART_IRQRBHandler(LPC_UART1, &hal::uarts::rxBuffer1, &hal::uarts::txBuffer1);
+//	Chip_UART_IRQRBHandler(LPC_UART1, &hal::uarts::rxBuffer1, &hal::uarts::txBuffer1);
+
+	// Handle transmit interrupt if enabled
+/*	if(LPC_UART1->IER & UART_IER_THREINT) 
+	{
+		Chip_UART_TXIntHandlerRB(LPC_UART1, &hal::uarts::txBuffer1);
+
+		// Disable transmit interrupt if the ring buffer is empty
+		if(RingBuffer_IsEmpty(&hal::uarts::txBuffer1)) 
+			Chip_UART_IntDisable(LPC_UART1, UART_IER_THREINT);
+	} */
+
+	if(LPC_UART1->IIR & UART_IIR_INTID_THRE) 
+	{
+		if(hal::uarts::u1Last)		// передавался последний (фиктивный) байт
+		{
+			hal::uarts::u1Last = false;
+			hal::setUart1dir(false);
+
+			// Shut down transmit
+			Chip_UART_IntDisable(LPC_UART1, UART_IER_THREINT);
+		}
+		else
+		{
+			uint8_t c;
+	
+			// Fill FIFO until full or until TX ring buffer is empty
+			while ((Chip_UART_ReadLineStatus(LPC_UART1) & UART_LSR_THRE) != 0  &&
+					 RingBuffer_Pop(&hal::uarts::txBuffer1, &c)) 
+			{
+				Chip_UART_SendByte(LPC_UART1, c);
+			}
+			
+			// Turn off interrupt if the ring buffer is empty
+			if(RingBuffer_IsEmpty(&hal::uarts::txBuffer1)) 
+			{
+				// Shut down transmit
+//				Chip_UART_IntDisable(LPC_UART1, UART_IER_THREINT);
+				
+				// После передачи данных передать ещё один фиктивный байт, после которого 
+				// будет выключен драйвер RS485
+				hal::uarts::u1Last = true;
+				Chip_UART_SendByte(LPC_UART1, 0xFF);
+			}
+		}
+	}
+	else		// Handle receive interrupt
+		Chip_UART_RXIntHandlerRB(LPC_UART1, &hal::uarts::rxBuffer1);
 }
 
 extern "C" void UART3_IRQHandler(void)
@@ -125,8 +175,8 @@ void init(void)
 	setupUart(LPC_UART1,  UART1_IRQn,  2, UART1_BAUD);
 	setupUart(LPC_USART3, USART3_IRQn, 6, UART3_BAUD);
 	
-	Chip_UART_SetRS485Flags(LPC_USART3, UART_RS485CTRL_DCTRL_EN | UART_RS485CTRL_OINV_1);
-	Chip_UART_SetRS485Delay(LPC_USART3, 200);
+//	Chip_UART_SetRS485Flags(LPC_UART1, UART_RS485CTRL_DCTRL_EN | UART_RS485CTRL_OINV_1);
+//	Chip_UART_SetRS485Delay(LPC_UART1, 200);
 }
 
 
@@ -156,8 +206,15 @@ uint32_t setBaud(uint32_t n, uint32_t baud)
 // return		Number of bytes, writen to buffer
 uint32_t write(uint32_t n, uint8_t* data, uint8_t size)
 {
-	if(n == 1)			return Chip_UART_SendRB(LPC_UART1,  &txBuffer1, data, size);
-	else if(n == 3)	return Chip_UART_SendRB(LPC_USART3, &txBuffer3, data, size);
+	if(n == 1)
+	{
+		hal::setUart1dir(true);
+		uint32_t n = Chip_UART_SendRB(LPC_UART1, &txBuffer1, data, size);
+		if(n == 0)
+			hal::setUart1dir(false);
+		return n;
+	}
+	else if(n == 3)		return Chip_UART_SendRB(LPC_USART3, &txBuffer3, data, size);
 	else
 		return 0;
 }
@@ -193,7 +250,7 @@ void process(void)
 	const int kMaxRxSz = 64;
 	
   uint8_t data[kMaxRxSz];
-
+  
   int n = Chip_UART_ReadRB(UART_RS232, rxBuffer_Rs232, &data[0], kMaxRxSz);
 
   if(n > 0)
@@ -206,6 +263,8 @@ void process(void)
 	
 	if(n > 0)
 	{
+//		for(int i = 0; i < n; i++)  putc(data[i]);		// RS485 -> консоль
+		
 		Chip_UART_SendRB(UART_RS485, txBuffer_Rs485, data, n);		// эхо
 		
 		int nn = RingBuffer_PopMult(rxBuffer_Rs485, data, n);
