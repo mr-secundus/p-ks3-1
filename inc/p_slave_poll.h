@@ -8,14 +8,16 @@
 #include "hal.h"
 #include "dataio/tdatabuffer.h"
 #include "protocol.h"  
-#include "cfg/slave_io.h"
 #include "cfg/protocol.h"
+#include "cfg/slave_io.h"
 
 
 // Формирование запросов к устройству и прием блоков данных
 class SlavePoll
 {
 public:
+	static constexpr uint16_t kMaxSlaves = SLAVE_IO_SLAVES_N;
+
 	using int16_ptdatabuffer_t  = int16_t (*)(TDataBuffer*, uint16_t);
 	
 	// Результат выполнения запроса к устройству
@@ -33,7 +35,7 @@ public:
 	};
 	
 protected:
-	static const int16_t kPnBufferFree = 0xFFFF;
+	static constexpr uint16_t kPnBufferFree = 0xFFFF;
 	
 	// Состояние автомата опроса
 	using state_t = enum
@@ -48,7 +50,7 @@ protected:
 		kStStop										// останов опроса
 	};
 
-	// Информация об одном ведомом устройстве
+	// Информация об одном ведомом устройстве - адрес + текущее состояние опроса
 	using slave_info_t = struct
 	{
 		uint16_t	address,				// адреса ведомоых устройств
@@ -61,7 +63,7 @@ protected:
 
 	state_t		state;											// состояние автомата опроса
 
-	slave_info_t	slaves[kMaxSlaves];			// ведомоые устройства
+	slave_info_t	slaves[kMaxSlaves];			// ведомые устройства
 
 	uint32_t 	rqPeriod,										// период формирования запросов, мс
 						rqTimeout,									// таймаут ожидания ответа
@@ -104,7 +106,7 @@ protected:
 		// data		байты данных  0..3
 		// id				id канала связи
 		Protocol::addTxMsgApp(addr, DataIO::MsgApp_RequestData, 0, 0,
-													TTxRequest::FBreakPacket | TTxRequest::FRqAnswer, LINK_ID_LOCAL);
+													TTxRequest::FBreakPacket | TTxRequest::FRqAnswer, SLAVE_IO_LINK_ID);
 	}
 
 	// Отправка подтверждения приема блока данных
@@ -124,7 +126,7 @@ protected:
 		uint16_t dataSize = sizeof(uint16_t);
 
 		Protocol::addTxMsgApp(addr, DataIO::MsgApp_DataAcknowledge, sizeof(uint16_t), dataSize,
-													TTxRequest::FBreakPacket | TTxRequest::FRqAnswer, LINK_ID_LOCAL);
+													TTxRequest::FBreakPacket | TTxRequest::FRqAnswer, SLAVE_IO_LINK_ID);
 	}
 
 public:
@@ -148,7 +150,7 @@ public:
 	// Инициализация адресов ведомых устройств
 	//
 	// address				массив адресов
-	constexpr void setup(const uint16_t *address)
+	void setup(uint16_t *address)
 	{
 		for(uint16_t i = 0; i < kMaxSlaves; i++)
 			slaves[i].address = address[i];

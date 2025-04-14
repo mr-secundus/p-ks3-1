@@ -7,6 +7,7 @@
 #include <port.h>
 #include "cfg/defines.h"
 #include "cfg/protocol.h"
+#include "cfg/slave_io.h"
 
 
 // Определение состояния ошибки загрузки/сохранения блоков парамтеров в NV памяти
@@ -77,7 +78,7 @@ using TSetup2 = struct setup2_t
 // Setup3  - адреса ведомых устройств для LINK1
 using TSetup3 = struct setup3_t 
 {
-	uint16_t	slaves[LINK1_SLAVES_N];
+	uint16_t	slaves[SLAVE_IO_SLAVES_N];
 	uint16_t	reserved[6];
 	uint16_t	crc16;
 

@@ -16,11 +16,15 @@ static constexpr uint16_t kDataId	= DataIO::MsgApp_DataInt32x3;
 // –азмер отсчЄта данных
 static constexpr uint16_t kDataSampleSize = kSampleSize_Int32x3;
 
-// ћаксимальное число ведомых устройств дл€ опроса
-static constexpr int32_t kMaxSlaves = 4;
 
-#define SLAVE_RQ_PERIOD				200			// период отправки запросов на получение данных, мс
-#define SLAVE_RQ_TIMEOUT			 50			// таймаут ответа от устройства, мс
+#define SLAVE_IO_LINK_ID		LINK_ID_LOCAL		// используемый канал св€зи
+
+#define SLAVE_IO_SLAVES_N				 	8					// макс. число ведомых устройств
+
+#define SLAVE_IO_DATA_BUFFERS_N		32 				// количество буферов данных
+
+#define SLAVE_IO_RQ_PERIOD				200				// период отправки запросов на получение данных, мс
+#define SLAVE_IO_RQ_TIMEOUT			 	50				// таймаут ответа от устройства, мс
 
 
 #endif // SLAVE_IO_H

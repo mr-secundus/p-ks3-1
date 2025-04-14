@@ -4,6 +4,7 @@
 
 #include "cfg/defines.h"
 #include "dataio/tdatabuffer.h"
+#include "cfg/slave_io.h"
 
 class TDataBuffersContainer
 {
@@ -12,7 +13,7 @@ public:
 	static constexpr int16_t kRcErr = -1;		// ошибка выполнения операции  
 
 	// Размер контейнера
-	static constexpr int16_t kMaxSize = DATA_BUFFERS_N;
+	static constexpr int16_t kMaxSize = SLAVE_IO_DATA_BUFFERS_N;
 	
 	// Состояние буфера
 	// Именованные константы вместо true/false используются для совместимости с реализацией
@@ -39,7 +40,7 @@ protected:
 		bool 				state;						// true - блок содержит данные
 	};
 	
-	buffer_info_t		buffers[DATA_BUFFERS_N];
+	buffer_info_t		buffers[kMaxSize];
 	
 	uint16_t	size,									// количество элементов в buffers и state
 						bufferCapacity,				// макс. кол-во отсчётов в одном буфере

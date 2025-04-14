@@ -22,6 +22,8 @@
 // Формирование блоков данных в режиме имитации для тестирования модуля
 //#define SIM_DATA				
 
+#define DATA_BUFFERS_N	SLAVE_IO_DATA_BUFFERS_N
+
 
 namespace data_buffers
 {    

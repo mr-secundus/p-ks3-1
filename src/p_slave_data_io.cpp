@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "cfg/defines.h"
 #include "data_buffers.h"
+#include "data.h"
 #include "p_slave_poll.h"
 #include "p_slave_data_io.h"
 
@@ -21,9 +22,6 @@ int16_t dataHandler(TDataBuffer* p, uint16_t dataId);
 //-----------------------------------------------------------------------------
 //                              Variables
 //-----------------------------------------------------------------------------
-
-// Адреса ведомых устройств
-const uint16_t slavesAddress[kMaxSlaves] = { 1, 2, 0, 0 };
 
 SlavePoll	slPoll(dataHandler);
 
@@ -65,8 +63,8 @@ int16_t dataHandler(TDataBuffer* p, uint16_t dataId)
 // Инициализация
 void init(void)
 { 
-	slPoll.configure(SLAVE_RQ_PERIOD, SLAVE_RQ_TIMEOUT);
-	slPoll.setup(slavesAddress);
+	slPoll.configure(SLAVE_IO_RQ_PERIOD, SLAVE_IO_RQ_TIMEOUT);
+	slPoll.setup(setup3.slaves);
 }
 
 

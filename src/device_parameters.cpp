@@ -29,7 +29,7 @@ bool TDevice_Parameters::__write(uint16_t n, int32_t v)
 		// продолжить обработку в главном switch
   } 
 
-  if(n >= 100  &&  n < (100 + LINK1_SLAVES_N))
+  if(n >= 100  &&  n < (100 + SLAVE_IO_SLAVES_N))
   {
   	setup3.slaves[n - 100] = v;
   	return true;
@@ -190,7 +190,7 @@ bool TDevice_Parameters::__read(uint16_t n, int32_t* v)
 		  return false;
   } 
   
-  if(n >= 100  &&  n < (100 + LINK1_SLAVES_N))
+  if(n >= 100  &&  n < (100 + SLAVE_IO_SLAVES_N))
   {
   	*v = setup3.slaves[n - 100];
   	return true;
@@ -225,8 +225,8 @@ bool TDevice_Parameters::__read(uint16_t n, int32_t* v)
     case 69: *v = setup2.localPort; 			break;
     case 70: *v = setup2.destPort; 				break;
     
-    case 90:  *v = LINK1_SLAVES_N;		break;
-    case 91:  *v = DATA_BUFFERS_N;		break;
+    case 90:  *v = SLAVE_IO_SLAVES_N;		break;
+    case 91:  *v = SLAVE_IO_DATA_BUFFERS_N;		break;
 
     case 99:  *v = R99;		break;
 	}
