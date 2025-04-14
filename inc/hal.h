@@ -43,6 +43,16 @@ extern volatile uint32_t ticks;
 		return ticks2 + (0xFFFFFFFF - ticks1);
 } */
 
+// Инициализация управления драйвером RS485-1
+//
+// Начальная инициализация таймера, по которому выполняется выключение драйвера RS485-1.
+// 
+// baud			скорость UART, бит/сек
+// extra		дополнительная задержка в тактах МК
+void initUart1DrvControl(uint32_t baud, uint32_t extra);
+
+// Пуск отсчета интервала выключения драйвера RS485-1
+void startUart1DrvTimer(void);
 
 // Установить состояние сигнала RESET для ETH PHY
 //
@@ -52,7 +62,7 @@ void setEthPhyReset(bool st);
 // Установить состояние выхода управления драйвером RS485-1
 //
 // st		true/false - on/off
-void setUart1dir(bool st);
+void setUart1Drv(bool st);
 
 // Установить состояние выхода управления индикатором
 //

@@ -113,7 +113,10 @@ void TTaskInit::process(void)
 #ifdef DEBUG_INIT  	
 //			printMemoryInfo();
 #endif
-			loadNvData();      
+			loadNvData();
+			
+			hal::initUart1DrvControl(setup2.baudRs485_1, LINK1_EXTRA_DELAY);
+			
 			Protocol::init();
 			Protocol::configure(LINK_ID_HI_IO, setup2.netAddrHi, PROTOCOL_RX_TIMEOUT);
 			Protocol::configure(LINK_ID_LOCAL, setup2.netAddrRs485_1, PROTOCOL_RX_TIMEOUT);

@@ -1,4 +1,8 @@
 #include <string.h>
+#include <stdio.h>
+
+#include <putx.h>
+
 #include "hal.h"
 #include "hal_uarts.h"
 #include "cfg/defines.h"
@@ -96,6 +100,21 @@ extern "C" void SysTick_Handler(void)
 	systick_timems++;
 }
 
+
+// TIMER1 ISR
+//
+// Timer1 используется для отсчета таймаута выключения драйвера RS485-1
+extern "C" void TIMER1_IRQHandler(void)
+{
+	if(Chip_TIMER_MatchPending(LPC_TIMER1, 1)) 
+	{
+		Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
+		Chip_TIMER_Disable(LPC_TIMER1);
+
+		hal::setUart1Drv(false);
+	}
+}
+
 //-----------------------------------------------------------------------------
 //                          Private functions
 //-----------------------------------------------------------------------------
@@ -185,15 +204,6 @@ void setEthPhyReset(bool st)
 }
 
 
-// Установить состояние выхода управления драйвером RS485-1
-//
-// st		true/false - on/off
-void setUart1dir(bool st)
-{
-	Chip_GPIO_SetPinState(LPC_GPIO_PORT, U1_DIR_GPIO_PORT, U1_DIR_GPIO_BIT, st);
-}
-
-
 // Установить состояние выхода управления индикатором
 //
 // LEDNumber		kLed0 .. kLed3
@@ -202,6 +212,50 @@ void setLed(uint8_t LEDNumber, bool st)
 {
 	if (LEDNumber < (sizeof(gpioLEDBits) / sizeof(io_port_t)))
 		Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpioLEDBits[LEDNumber].port, gpioLEDBits[LEDNumber].pin, st);
+}
+
+
+// Инициализация управления драйвером RS485-1
+//
+// Начальная инициализация таймера, по которому выполняется выключение драйвера RS485-1.
+// 
+// baud			скорость UART, бит/сек
+// extra		дополнительная задержка в тактах МК
+void initUart1DrvControl(uint32_t baud, uint32_t extra)
+{
+	Chip_TIMER_Init(LPC_TIMER1);
+	Chip_RGU_TriggerReset(RGU_TIMER1_RST);
+	while(Chip_RGU_InReset(RGU_TIMER1_RST)) {}
+	
+	// timer 1 peripheral clock rate
+	uint32_t timerFreq = Chip_Clock_GetRate(CLK_MX_TIMER1);
+	
+	// Timer setup for interrupt on Match1
+	Chip_TIMER_Reset(LPC_TIMER1);
+	Chip_TIMER_MatchEnableInt(LPC_TIMER1, 1);
+	Chip_TIMER_SetMatch(LPC_TIMER1, 1, (timerFreq / (baud / 10) + extra));
+	Chip_TIMER_ResetOnMatchEnable(LPC_TIMER1, 1);
+	Chip_TIMER_Disable(LPC_TIMER1);
+	
+	NVIC_EnableIRQ(TIMER1_IRQn);
+	NVIC_ClearPendingIRQ(TIMER1_IRQn);	
+}
+
+
+// Установить состояние выхода управления драйвером RS485-1
+//
+// st		true/false - on/off
+void setUart1Drv(bool st)
+{
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, U1_DIR_GPIO_PORT, U1_DIR_GPIO_BIT, st);
+}
+
+
+// Пуск отсчета интервала выключения драйвера RS485-1
+void startUart1DrvTimer(void)
+{
+	Chip_TIMER_Reset(LPC_TIMER1);
+	Chip_TIMER_Enable(LPC_TIMER1);
 }
 
 

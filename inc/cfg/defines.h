@@ -75,6 +75,9 @@
 
 #define PROTOCOL_BROADCAST_ADDRESS	0xFF		// broadcast address
 
+#define LINK1_EXTRA_DELAY						800			// доп. задержка отключения драйвера RS485
+																						// после передачи последнего байта [MCU clocks]
+
 // Настройки интерфейсов связи находятся в cfg/protocol.h
 
 
