@@ -287,17 +287,6 @@ void init(void)
 void process(void)
 {
 	hal::uarts::process();
-	
-	static uint32_t tm = 0;
-	
-	if(TIMEOUT(tm, 20))
-	{
-		tm = now;
-		
-//		uint8_t data[11] = "1234567890\n"; 
-		uint8_t data[3] = "12"; 
-		uarts::write(1, data, 2);
-	}
 }
 
 };		// namespace hal
