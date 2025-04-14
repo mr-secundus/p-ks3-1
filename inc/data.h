@@ -6,6 +6,7 @@
 
 #include <port.h>
 #include "cfg/defines.h"
+#include "cfg/protocol.h"
 
 
 // Определение состояния ошибки загрузки/сохранения блоков парамтеров в NV памяти

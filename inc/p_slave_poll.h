@@ -8,8 +8,8 @@
 #include "hal.h"
 #include "dataio/tdatabuffer.h"
 #include "protocol.h"  
-//#include "cfg/defines.h"
 #include "cfg/slave_io.h"
+#include "cfg/protocol.h"
 
 
 // Формирование запросов к устройству и прием блоков данных

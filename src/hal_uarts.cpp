@@ -3,6 +3,7 @@
 #include "port.h"
 #include "hal_uarts.h"
 #include "cfg/defines.h"
+#include "cfg/protocol.h"
 #include "protocol/protocol.h"
 
 extern "C" {

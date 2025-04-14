@@ -8,6 +8,7 @@
 #include "cfg/slave_io.h"
 #include "protocol.h"
 #include "p_slave_data_io.h"
+#include "cfg/protocol.h"
 
 
 namespace P_SlaveMsgHandlers_Local

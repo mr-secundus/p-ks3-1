@@ -293,33 +293,36 @@ uint32_t getTxFree(void)
 //-----------------------------------------------------------------------------
 
 //
-// Инициализация модуля протокола.
-// addrHi				сетевой адрес интефейса связи с ВУ
-// addrLocal		сетевой адрес интефейса связи с локальными узлами
-// addrExt			сетевой адрес интефейса связи с внешними ведомыми устройствами
+// Инициализация модуля протокола
 // 
-void init(uint16_t addrHi, uint16_t addrLocal, uint16_t addrExt)
+void init(void)
 {
 	protocolInst_HiIO.install(    &rxMsgHandler_HiIO,     &layer1TxInterface);
 	protocolInst_Local.install(   &rxMsgHandler_Local,    &layer1TxInterface);
 #ifdef LINK_ID_EXTERNAL
 	protocolInst_External.install(&rxMsgHandler_External, &layer1TxInterface);
 #endif
-	
-	protocol_HiIO.configure(        addrHi,    PROTOCOL_BROADCAST_ADDRESS, PROTOCOL_RX_TIMEOUT);
-	protocolInst_Local.configure(   addrLocal, PROTOCOL_BROADCAST_ADDRESS, PROTOCOL_RX_TIMEOUT);
-#ifdef LINK_ID_EXTERNAL
-	protocolInst_External.configure(addrExt,   PROTOCOL_BROADCAST_ADDRESS, PROTOCOL_RX_TIMEOUT);
-#endif
 }     
 
 
 //
-// Конфигурирование интерфейса связи HiIO - применение сетевого адреса
+// Установка параметров интерфейса связи - сетевой адрес и таймаут приема пакета
 //
-void configureHiIO(uint16_t addrHi)
+// id						идентификатор канала свзяи - см. LINK_ID_..
+// addr					сетевой адрес интерфейса
+// rxTimeout		таймаут приема пакета, мс
+// 
+//
+void configure(uint8_t id, uint16_t addr, uint16_t rxTimeout)
 {
-	protocol_HiIO.configure(addrHi, PROTOCOL_BROADCAST_ADDRESS, PROTOCOL_RX_TIMEOUT);
+	if(id == LINK_ID_HI_IO)
+		protocol_HiIO.configure(addr, PROTOCOL_BROADCAST_ADDRESS, rxTimeout);
+	else if(id == LINK_ID_LOCAL)
+		protocolInst_Local.configure(addr, PROTOCOL_BROADCAST_ADDRESS, rxTimeout);
+#ifdef LINK_ID_EXTERNAL
+	else if(id == LINK_ID_EXTERNAL)
+		protocolInst_External.configure(addr, PROTOCOL_BROADCAST_ADDRESS, rxTimeout);
+#endif
 }                  
 
 //

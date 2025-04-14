@@ -1,37 +1,35 @@
 // protocol.h
-
-//-----------------------------------------------------------------------------
-//      Обмен по протоколу DataIO с ВУ, узлами и внешними устройствами
-//-----------------------------------------------------------------------------
+//
+// Настройки обмена по интерфейсам связи
 
 //
-// Идентификаторы каналов связи - передаются в соотв. объекты TProtocolInstance,
-// соответствуют номерам используемых UART - см. реализацию TLayer1TxInterface в hal_uarts.cpp.
-// Указаны номера разъемов на плате интерфейса.
+// Идентификаторы каналов связи - передаются в соотв. объекты TProtocolInstance
+// Для интерфейсов на базе RS485 должны соответствовать номерам используемых UART -
+// передаются при вызове функций hal::uarts::
 //
-#define LINK_ID_HI_IO				3			// связь с ВУ                   RS485 @ X6
-#define LINK_ID_LOCAL				1			// внутренняя шина устройства		RS485 @ X7
+#define LINK_ID_HI_IO				9			// связь с ВУ по UDP
+#define LINK_ID_LOCAL				3			// опрос ведомых устройств - RS485-1
 
 
-#define NET_ADDRESS_LOCAL						0					// сетевой адрес интерфейса связи с локальными устройствами
-#define NET_ADDRESS_EXT							0					// сетевой адрес интерфейса связи с внешними
-																							// ведомыми устройствами
+// default сетевые адреса интерфейсов связи
+#define DEFAULT_NET_ADDRESS_HI_IO    	99
+#define DEFAULT_NET_ADDRESS_LINK1			1
+#define DEFAULT_NET_ADDRESS_LINK2			1
 
-#define PROTOCOL_BROADCAST_ADDRESS	0xff		// broadcast address
-#define PROTOCOL_RX_TIMEOUT					5		  // таймаут приема данных, миллисекунд
+#define PROTOCOL_BROADCAST_ADDRESS	0xFF		// broadcast address
 
-// обмен с узлами по внутренней шине [миллисекунды]
-#define TIMEOUT_SLAVE_ANSWER_LOC   20				// таймаут ожидания ответа от устройства
-#define TIMEOUT_END_PACKET_LOC      2				// таймаут ожидания конца пакета (макс. интервал между сообщениями в одном пакете)
+#define PROTOCOL_RX_TIMEOUT					5		  	// таймаут приема данных, миллисекунд
+
+// Обмен с ведомыми устройствами
+#define TIMEOUT_SLAVE_ANSWER_LOC   20				// таймаут ожидания ответа от устройства [мс]
+#define TIMEOUT_END_PACKET_LOC      2				// таймаут ожидания конца пакета [мс]
+																						// (макс. интервал между сообщениями в одном пакете)
 //#define TM_PACKET_INTERVAL_LOC		  2				// мин. интервал между пакетами			
-#define TM_POLL_INTERVAL_LOC			 10 			// интервал опроса устройств
+#define TM_POLL_INTERVAL_LOC			 10 			// интервал опроса устройств [мс]
 
-#define TX_RQ_N_LOC								16				// размер очереди запросов Local
-
-#define AI4R_NET_ADDRESS					10 				// сетевой адрес модуля AI4R
+#define TX_RQ_N_LOC									8				// размер очереди запросов Local
 
 // Макс. размер прикладных данных в выходном пакете для разных вариантов
 #define MAX_TX_APP_SIZE_DATAIO				(TProtocol::MaxPacketPayload)			// RS485
-//#define MAX_TX_APP_SIZE_DATAIO_APP		1472															// UDP
 #define MAX_TX_APP_SIZE_DATAIO_APP		1440															// UDP
 
