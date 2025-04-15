@@ -98,7 +98,7 @@ void init(void)
 	for(int i = 0; i < DATA_BUFFERS_N; i++)
 		buffers.setup(i, reinterpret_cast<TDataBuffer*>(&rawBuffer[MAX_DATA_BUFFER_SIZE * i]));
 	
-#ifdef SIM_DATA	
+#ifdef SIM_DATA__	
 	using sample_x3_t = struct tag_sample_x3
 	{
 		int32_t x, y, z;

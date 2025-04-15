@@ -13,10 +13,23 @@
 
 
 // Формирование запросов к устройству и прием блоков данных
-class SlavePoll
+class SlavesPoll
 {
 public:
 	static constexpr uint16_t kMaxSlaves = SLAVE_IO_SLAVES_N;
+
+	// Состояние автомата опроса
+	using state_t = enum
+	{
+		kStIdle = 0,							// остановлено
+		kStStart,									// запуск опроса
+		kStStartPeriod,						// начало очередного цикла опроса
+		kStSendRq,								// отправка запроса
+		kStWait,									// ожидание ответа от устройства
+		kStNext,									// переход к следующему устройству
+		kStWaitRqInterval,				// ожидание завершения периода опроса 
+		kStStop										// останов опроса
+	};
 
 	using data_handler_t  = int16_t (*)(uint16_t, TDataBuffer*, uint16_t);
 	
@@ -37,19 +50,6 @@ public:
 protected:
 	static constexpr uint16_t kPnBufferFree = 0xFFFF;
 	
-	// Состояние автомата опроса
-	using state_t = enum
-	{
-		kStIdle = 0,							// остановлено
-		kStStart,									// запуск опроса
-		kStStartPeriod,						// начало очередного цикла опроса
-		kStSendRq,								// отправка запроса
-		kStWait,									// ожидание ответа от устройства
-		kStNext,									// переход к следующему устройству
-		kStWaitRqInterval,				// ожидание завершения периода опроса 
-		kStStop										// останов опроса
-	};
-
 	// Информация об одном ведомом устройстве - адрес + текущее состояние опроса
 	using slave_info_t = struct
 	{
@@ -130,12 +130,25 @@ protected:
 	}
 
 public:
-	SlavePoll(data_handler_t h) :
+	SlavesPoll(data_handler_t h) :
 		dataHandler(h),
 		state(kStIdle),
 		index(0),
 		sequenceNumber(0)
 	{
+	}
+	
+	// Возвращает текущее состояние автомата
+	int16_t getState(void)
+	{
+		return state;
+	}
+
+	// Возвращает адрес текущего опрашиваемого устройства в соответствии с index.
+	// При некорректном значении index возвращает 0.
+	int16_t getAddress(void)
+	{
+		return index < kMaxSlaves ? slaves[index].address : 0;
 	}
 
 	// Установка параметров опроса
