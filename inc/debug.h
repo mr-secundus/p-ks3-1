@@ -21,7 +21,7 @@
 //	#define DEBUG_PROTOCOL_MESSAGES			// обмен с ВУ
 //	#define DEBUG_PROTOCOL_MESSAGES_LOC	// сообщения от узлов на локальной шине
 
-//	#define DEBUG_TX_BUFFERS						// передача данных АЦП
+//	#define DEBUG_TX_BUFFERS						// буферизация данных измерения
 	
 //	#define DEBUG_EMAC_APP							// EMAC и сетевой стек - уровень приложения 
 //	#define DEBUG_EMAC_SERVICE					// задача контроля состояния подключения

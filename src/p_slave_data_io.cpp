@@ -54,7 +54,7 @@ int16_t dataHandler(uint16_t srcAddress, TDataBuffer* p, uint16_t dataId)
 	char s[128];
 	
 	// вывод информации о прин€том блоке данных
-	sprintf(s, "%lu rcv addr:%d pn:%d sy:%lu size:%d\n",
+	sprintf(s, "%lu rcv a:%d pn:%d sy:%lu sz:%d\n",
 					now, srcAddress, p->packet, p->sync, p->size);
 	puts(s);
 
@@ -83,7 +83,7 @@ void init(void)
 	slPoll.setup(setup3.slaves);
 	
 #ifdef SIM_DATA	
-	uint16_t sladdr[SLAVE_IO_SLAVES_N] = {1, 0, 0, 0, 0, 0, 0, 0};
+	uint16_t sladdr[SLAVE_IO_SLAVES_N] = {1, 2, 0, 0, 0, 0, 0, 0};
 	
 	simData.setSlavesAddress(sladdr);
 	simData.setFd(50000);								// 50 √ц -> T=840 мс
@@ -94,6 +94,7 @@ void init(void)
 // ѕуск опроса
 void start(void)
 {
+	data_buffers::reset();	
 	slPoll.start();
 	
 #ifdef SIM_DATA

@@ -57,7 +57,7 @@ public:
 		bufferCapacity(TDataBuffer::kMaxDataSize),
 		nFree(kMaxSize),
 		nFull(0),
-		iFree(0),
+		iFree(kMaxSize),
 		iFull(0),
 		sizeofTData(0)
 	{
@@ -203,8 +203,8 @@ public:
 	{
 		if(buffers[n].state == stFull)
 		{                
-			if(nFree > 0)
-				nFree--;		
+			if(nFull > 0)
+				nFull--;		
 			
 			if(nFull > 0)
 				if(++iFull == size)
@@ -265,13 +265,6 @@ public:
 	//          false 	не найден буфер с заданным pn
 	bool releaseBufferByPacketNumber(uint16_t pn)
 	{                         
-/*		for(auto& x : buffers)
-			if(x.buffer->packet == pn)
-			{
-				releaseBuffer(i);
-				return true;
-			} */
-
 		for(uint16_t i = 0; i < size; i++)       
 			if(buffers[i].buffer->packet == pn)
 			{

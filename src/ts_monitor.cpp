@@ -43,7 +43,7 @@ void TTaskMonitor::handleEvent(TCMessage* msg)
 			break;
 
 		case msgNetConnected:
-//			p_slave_data_io::start();
+			p_slave_data_io::start();
       break;
 
 		case msgNetDisconnected:
@@ -57,6 +57,8 @@ void TTaskMonitor::process(void)
 {   
 	// Периодическая обработка автомата передачи запросов по локальному интерфейсу связи
 	Protocol::MasterTxLocal.process();
+	
+	p_slave_data_io::process();
 	
   if(TIMEOUT(timer, 5))
   {

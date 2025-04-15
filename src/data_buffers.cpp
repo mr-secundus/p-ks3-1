@@ -68,13 +68,13 @@ int16_t addMsgData(uint8_t seqNumber, TDataBuffer* buffer, uint16_t address)
 	int16_t result = Protocol::addMessage((uint8_t*)&msg, (uint8_t*)buffer);
 		
 #ifdef DEBUG_TX_BUFFERS
-  puts(sendStateInfo ? " S:" : " s:"); putd(buffer->packetNumber);
+/*  puts(sendStateInfo ? " S:" : " s:"); putd(buffer->packetNumber);
   puts(" sq:");   putl(seqNumber);
   puts(" sy:");   putl(buffer->sync);
   puts(" dsz:");  putl(buffer->dataSize);
   puts(" rc:");   putd(result);
 
-  if(result != 0)  puts(" Error");
+  if(result != 0)  puts(" Error"); */
 #endif
 
   return result == 0 ? 0 : -1;
@@ -260,10 +260,14 @@ int16_t writeBuffer(uint16_t srcAddress, TDataBuffer* buffer, uint32_t dataId)
 		{
 			buffers.setAddress(n, srcAddress);
 			memcpy(b, buffer, TDataBuffer::getServiceInfoSize() + dataSize);
+			buffers.unlockBuffer(n);
 			return TDataBuffer::getServiceInfoSize() + dataSize;
 		}
 		else
+		{
+			buffers.unlockBuffer(n);
 			return kIncorrectSize;
+		}
 	}
 	else
 		return kNoBuffers;

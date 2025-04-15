@@ -89,7 +89,7 @@ public:
 	//					false		некорректное значение fd
 	bool setFd(uint32_t fd)
 	{
-		if(fd >= 1000  &&  fd <= 4000)
+		if(fd >= 1000  &&  fd <= 4000000)
 		{
 			uint32_t period_x1000 = 1000000 / fd;
 			uint32_t packetPeriod = period_x1000 * kSamplesN;   
@@ -168,7 +168,9 @@ public:
 		if(s->packetNumber > 1000)
 			s->packetNumber = 1;
 		
-		s->sync += s->packetPeriod;
+		s->time = now;
+//		s->sync += s->packetPeriod;
+		s->sync = now;
 		s->packetCounter++;
 		
 		return true;

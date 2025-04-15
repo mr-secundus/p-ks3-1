@@ -99,6 +99,8 @@ protected:
 		
 		protocol::sendPacket((uint8_t*)&msg, 0, slaveAddress); */
 		
+//		putlog(" rq a:"); putd(addr); putc('\n');
+		
 		// Добавляет в выходную очередь прикладное сообщение
 		// a			адрес получателя
 		// t			тип прикладного сообщения
@@ -206,7 +208,7 @@ public:
 					rcvData = rcvNoData = false;
 					slaves[index].state = kResWait; 
 					tmRq = now;
-					state = kStWaitRqInterval;
+					state = kStWait;
 				}
 				else
 					state = kStNext;
