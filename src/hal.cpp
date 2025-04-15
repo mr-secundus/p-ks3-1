@@ -85,6 +85,7 @@ static const io_port_t gpioLEDBits[] =
 
 volatile uint32_t ticks = 0;
 
+bool wdiState = false;					// состояние выхода управления внешним WDT
 };
 
 //-----------------------------------------------------------------------------
@@ -146,17 +147,14 @@ void setupClocking(void)
 // Инициализация дискретных выходов
 void initGpio()
 {
-	// LED's
 	for(uint32_t idx = 0; idx < (sizeof(gpioLEDBits) / sizeof(io_port_t)); ++idx) 
 	{
 		Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpioLEDBits[idx].port, gpioLEDBits[idx].pin);
 		Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpioLEDBits[idx].port, gpioLEDBits[idx].pin, false);
 	}
 	
-	// PHY Reset
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, PHY_RST_GPIO_PORT, PHY_RST_GPIO_BIT);
-	
-	// RS485-1 driver enable
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, WDI_GPIO_PORT, WDI_GPIO_BIT);
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, U1_DIR_GPIO_PORT, U1_DIR_GPIO_BIT);
 }
 	
@@ -183,6 +181,8 @@ void clearWDT(void)
 	LPC_WDT->FEED = 0xAA; 
 	LPC_WDT->FEED = 0x55; 
 	enable(); */
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, WDI_GPIO_PORT, WDI_GPIO_BIT, wdiState);
+	wdiState = wdiState ? false : true;  
 }
 
 
@@ -286,6 +286,7 @@ void init(void)
 //
 void process(void)
 {
+	clearWDT();
 	hal::uarts::process();
 }
 

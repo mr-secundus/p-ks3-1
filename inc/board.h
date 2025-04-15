@@ -75,6 +75,10 @@ extern "C" {
 	#define PHY_RST_BIT			  		6
 	#define PHY_RST_GPIO_PORT		  4
 	#define PHY_RST_GPIO_BIT		 11
+
+	// External WDT
+	#define WDI_GPIO_PORT		  		3			// P7.6
+	#define WDI_GPIO_BIT		 		 14
 	
 	// Выход управления драйвером RS485-1
 	// На схеме подключен к PF.4 без GPIO. Напаяна перемычка на X1:3 - P7.0.
@@ -97,6 +101,10 @@ extern "C" {
 	#define PHY_RST_BIT			  		3
 	#define PHY_RST_GPIO_PORT		  0
 	#define PHY_RST_GPIO_BIT		 10
+
+	// External WDT
+	#define WDI_GPIO_PORT		  		3			// P7.6
+	#define WDI_GPIO_BIT		 		 14
 
 	// Выход управления драйвером RS485-1
 	#define U1_DIR_GPIO_PORT			3			// P7.5			
