@@ -37,6 +37,7 @@ protected:
 	{
 		TDataBuffer *buffer;					// блок данных
 //		struct pbuf	*pbuffer;					// pbuf для размещения buffer
+		uint16_t		address;					// адрес ведомого устройства, от которого приняты данные
 		bool 				state;						// true - блок содержит данные
 	};
 	
@@ -98,6 +99,7 @@ public:
 		for(auto& x : buffers)
 		{
 			x.state = stFree;
+			x.address = 0;
 		}
 		
 		nFree = size;
@@ -135,6 +137,30 @@ public:
 			return kRcErr;
 		else
 			return iFree;
+	}
+	
+	
+	// Чтение адреса источника данных для отдельного буфера
+	//
+	// Возвращает адрес источника данных для буфера с индексом n.
+	// При некорректном n возвращает 0.
+	uint16_t getAddress(uint16_t n)
+	{
+		if(n < kMaxSize)
+			return buffers[n].address;
+		else
+			return 0;
+	}
+
+	
+	// Установка адреса источника данных для отдельного буфера
+	//
+	// n					индекс в массиве буферов
+	// addres			сетевой адрес источника данных
+	void setAddress(uint16_t n, uint16_t address)
+	{
+		if(n < kMaxSize)
+			buffers[n].address = address;
 	}
 		
 	
@@ -195,6 +221,7 @@ public:
 		}                    
 		buffers[n].state = stFree;
 		buffers[n].buffer->packet = 0;
+		buffers[n].address = 0;
 	}         
 
 	// Перевод буфера в состояние "Free"

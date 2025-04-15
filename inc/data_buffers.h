@@ -79,6 +79,7 @@ int16_t getDataReadyInfo(void);
 // Выделяет очередной свободный блок в контейнере и копирует в него данные из b.
 // Возвращает ошибку, если размер данных в b превышает ёмкость буфера в контейнере.
 //
+// srcAddress	адрес источника данных
 // buffer			указатель на входящий блок данных
 // dataId			тип данных - соответствует полю DataIO::TMsgAppTypeHeader.type
 //
@@ -87,7 +88,7 @@ int16_t getDataReadyInfo(void);
 //						kIncorrectSize	несоответствие размера входящего буфера
 //						kIncorrectId		тип данных не поддерживается
 //
-int16_t writeBuffer(TDataBuffer* buffer, uint32_t dataId);
+int16_t writeBuffer(uint16_t srcAddress, TDataBuffer* buffer, uint32_t dataId);
 };		// namespace
 
 

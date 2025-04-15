@@ -1,6 +1,12 @@
 // p_slave_data_io.cpp
 //
 // Опрос ведомых устройств и обработка принятых данных
+//
+// Управление автоматом опроса ведомых устройств:
+//   - пуск/останов опроса
+//   - периодическое выполнение автомата
+// Интерфейс между обработчиком сообщений от ведомых устройств
+// и контейнером буферов данных для передачи на ВУ.
 
 #include <stdio.h>
 
@@ -17,7 +23,7 @@
 
 namespace p_slave_data_io
 {
-int16_t dataHandler(TDataBuffer* p, uint16_t dataId);
+int16_t dataHandler(uint16_t srcAddress, TDataBuffer* p, uint16_t dataId);
 
 //-----------------------------------------------------------------------------
 //                              Variables
@@ -26,15 +32,15 @@ int16_t dataHandler(TDataBuffer* p, uint16_t dataId);
 SlavePoll	slPoll(dataHandler);
 
 //-----------------------------------------------------------------------------
-//                                 Private
+//                                Private
 //-----------------------------------------------------------------------------
 
 //
 // Обработка принятого блока данных
 //
-int16_t dataHandler(TDataBuffer* p, uint16_t dataId)
+int16_t dataHandler(uint16_t srcAddress, TDataBuffer* p, uint16_t dataId)
 {
-	int16_t rc = data_buffers::writeBuffer(p, dataId); 
+	int16_t rc = data_buffers::writeBuffer(srcAddress, p, dataId); 
 
 	char s[128];
 	

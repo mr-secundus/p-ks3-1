@@ -46,17 +46,24 @@ TDataBuffersContainer buffers;
 //
 // seqNumber		  sequenceNumber посылаемого пакета. При отправке данных в ответ
 //                на запрос берется из запроса, при автопередаче равно 0xfe.
+// buffer					блок данных
+// address				сетевой адрес источника данных 
 //               
 // return		 0  Ok
 //          -1  недостаточно места в выходном буфере
 //
-int16_t addMsgData(uint8_t seqNumber, TDataBuffer* buffer)
+int16_t addMsgData(uint8_t seqNumber, TDataBuffer* buffer, uint16_t address)
 {    
 	DataIO::TMsgAppTypeHeader msg;
 	msg.id							= DataIO::MsgAppType;
   msg.sequenceNumber	= seqNumber;
   msg.type						= kDataId;
   msg.dataSize				= buffer->getServiceInfoSize() + buffer->size * kDataSampleSize;
+
+  // Установить в type:
+  // - флаг 0x8000 -> в разрядах b14..b8 адрес источника данных
+  // - в b14..b8 записать адрес
+	msg.type |= 0x8000 | ((address & 0xFF) << 8);
   
 	int16_t result = Protocol::addMessage((uint8_t*)&msg, (uint8_t*)buffer);
 		
@@ -184,7 +191,7 @@ void handleMsgRequestData(uint16_t srcAddress, DataIO::TMsgAppTypeHeader* msg, b
 	if(n != buffers.kRcErr)
 	{
 //		rc = addMsgData(msg->sequenceNumber, buffers.getBuffer(n));
-		addMsgData(msg->sequenceNumber, buffers.getBuffer(n));
+		addMsgData(msg->sequenceNumber, buffers.getBuffer(n), buffers.getAddress(n));
 	}
 }
 
@@ -226,6 +233,7 @@ int16_t getDataReadyInfo(void)
 // Выделяет очередной свободный блок в контейнере и копирует в него данные из b.
 // Возвращает ошибку, если размер данных в b превышает ёмкость буфера в контейнере.
 //
+// srcAddress	адрес источника данных
 // buffer			указатель на входящий блок данных
 // dataId			тип данных - соответствует полю DataIO::TMsgAppTypeHeader.type
 //
@@ -234,7 +242,7 @@ int16_t getDataReadyInfo(void)
 //						kIncorrectSize	несоответствие размера входящего буфера
 //						kIncorrectId		тип данных не поддерживается
 //
-int16_t writeBuffer(TDataBuffer* buffer, uint32_t dataId)
+int16_t writeBuffer(uint16_t srcAddress, TDataBuffer* buffer, uint32_t dataId)
 {
 	if(dataId != kDataId)
 		return kIncorrectId;
@@ -250,6 +258,7 @@ int16_t writeBuffer(TDataBuffer* buffer, uint32_t dataId)
 		
 		if(dataSize <= TDataBuffer::kMaxDataSize)
 		{
+			buffers.setAddress(n, srcAddress);
 			memcpy(b, buffer, TDataBuffer::getServiceInfoSize() + dataSize);
 			return TDataBuffer::getServiceInfoSize() + dataSize;
 		}

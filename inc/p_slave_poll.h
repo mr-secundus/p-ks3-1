@@ -18,7 +18,7 @@ class SlavePoll
 public:
 	static constexpr uint16_t kMaxSlaves = SLAVE_IO_SLAVES_N;
 
-	using int16_ptdatabuffer_t  = int16_t (*)(TDataBuffer*, uint16_t);
+	using data_handler_t  = int16_t (*)(uint16_t, TDataBuffer*, uint16_t);
 	
 	// Результат выполнения запроса к устройству
 //	static const uint16_t kResIdle 			= 0;		// запрос не выполнялся
@@ -59,7 +59,7 @@ protected:
 	
 	};
 
-	int16_ptdatabuffer_t dataHandler;			// обработчик блока данных
+	data_handler_t	dataHandler;					// обработчик блока данных
 
 	state_t		state;											// состояние автомата опроса
 
@@ -130,7 +130,7 @@ protected:
 	}
 
 public:
-	SlavePoll(int16_ptdatabuffer_t h) :
+	SlavePoll(data_handler_t h) :
 		dataHandler(h),
 		state(kStIdle),
 		index(0),
@@ -270,7 +270,7 @@ public:
 			if(p->packet != slaves[index].packet)					// исключаем обработку повторных пакетов
 			{
 				slaves[index].packet = p->packet;
-				return dataHandler(p, dataId); 
+				return dataHandler(srcAddress, p, dataId); 
 			}
 		}
 		return 0; 
