@@ -167,24 +167,10 @@ void loadNvData(void)
 	for(uint16_t i=1; i<=NUM_NV_BLOCKS; i++)
 	{
 		nv_parameters::rc_t rc = nv_parameters::load(i, &R99);
-#ifdef DEBUG_INIT  	
-		puts(" nv_parameters::load("); putd(i); puts(") : ");
-//		putd(rc);
-		switch(rc)
-		{
-			default: puts("Error?\n");	break;
-			case nv_parameters::rcOk:					puts("Ok\n");				break;
-			case nv_parameters::rcError:			puts("Error\n");		break;
-			case nv_parameters::rcNotReady:		puts("NotReady\n");	break;
-			case nv_parameters::rcCrcError:		puts("CrcError\n");	break;
-			case nv_parameters::rcInvalidData:puts("InvalidData\n");	break;
-		}
-#else		
 		if(rc != nv_parameters::rcOk)
 		{
-			puts(" nv_parameters::load("); putd(i); puts(") error rc : "); putd(rc); puts("\n");				
+			puts(" nv load "); putd(i); puts(" error rc : "); putd(rc); puts("\n");				
 		}
-#endif
   }
 	
 #ifdef DEBUG_INIT  	

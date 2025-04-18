@@ -31,8 +31,9 @@
 //	#define DEBUG_UDP_TX  							// UDP tx queue
 //	#define DEBUG_UDP_RX_APP  					// только размер принятых пакетов 
 //	#define DEBUG_UDP_TX_APP  					// только размер выходного пакета
+//	#define DEBUG_SL_POLL  							// опрос ведомых устройств
 
-#define SIM_DATA												// имитация блоков данных	
+//#define SIM_DATA											// имитация блоков данных	
 	
 #else 
 	#ifdef	DEBUG_INIT

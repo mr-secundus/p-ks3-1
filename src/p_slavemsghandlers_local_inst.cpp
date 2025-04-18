@@ -50,8 +50,10 @@ void handleMsgAppType(DataIO::TMsgAppTypeHeader* msg, uint16_t destAddress, uint
 		puts(" s:"); 						putl(p->sync); putc('\n');   
 #endif
 
-		if(p_slave_data_io::handleMessageData(srcAddress, p, msg->type) > 0)
-			Protocol::addTxMsgApp(srcAddress, MsgApp_DataAcknowledge, sizeof(p->packet), p->packet, 0, LINK_ID_LOCAL);
+		// Подтверждение посылает обработчик
+//		if(p_slave_data_io::handleMessageData(srcAddress, p, msg->type) > 0)
+//			Protocol::addTxMsgApp(srcAddress, MsgApp_DataAcknowledge, sizeof(p->packet), p->packet, 0, LINK_ID_LOCAL);
+		p_slave_data_io::handleMessageData(srcAddress, p, msg->type);
 	}
 	// Отсутствие данных
 	else if(msg->type == MsgApp_DataAbsence)	

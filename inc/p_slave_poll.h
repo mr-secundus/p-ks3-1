@@ -27,17 +27,13 @@ public:
 		kStSendRq,								// отправка запроса
 		kStWait,									// ожидание ответа от устройства
 		kStNext,									// переход к следующему устройству
-		kStWaitRqInterval,				// ожидание завершения периода опроса 
+		kStWaitPeriod,						// ожидание завершения цикла опроса 
 		kStStop										// останов опроса
 	};
 
 	using data_handler_t  = int16_t (*)(uint16_t, TDataBuffer*, uint16_t);
 	
 	// Результат выполнения запроса к устройству
-//	static const uint16_t kResIdle 			= 0;		// запрос не выполнялся
-//	static const uint16_t kResRcvData 	= 1;		// приняты данные
-//	static const uint16_t kResNoData 		= 2;		// нет данных
-//	static const uint16_t kResTimeout 	= 3;		// таймаут ответа
 	using rq_res_t = enum
 	{
 		kResIdle	= 0,						// запрос не выполнялся
@@ -68,13 +64,17 @@ protected:
 	uint32_t 	rqPeriod,										// период формирования запросов, мс
 						rqTimeout,									// таймаут ожидания ответа
 						tmPeriod,										// время начала цикла опроса 
-						tmRq;												// время передачи запроса
+						tmRq,												// время передачи запроса
+						timer;											// отсчет к-л интервалов
 	uint16_t	index;											// индекс в slaves[] 
 	uint8_t 	sequenceNumber;							// sequence number для исходящих запросов
 	
-	bool			rcvData,										// флаги приема ссобщений от устройства
-						rcvNoData;
-
+	
+	// флаги приема сообщений от устройства
+	bool			rcvData,										// получены данные в ответ на запрос
+						rcvNoData,									// получено сообщение об отсутствии данных
+						isData;											// в текущем цикле получены данные хотя бы
+																				// от одного устройства
 
 	// Возвращает очередной sequenceNumber для нового запроса
 	uint8_t getSeqNumber(void)
@@ -91,22 +91,9 @@ protected:
 	// addr		адрес получателя
 	void sendRequest(uint16_t addr)
 	{
-/*		dataio::TMsgAppTypeHeader msg;
-		msg.id								= dataio::MsgAppType;
-		msg.sequenceNumber		= getSeqNumber();
-		msg.type							= dataio::MsgApp_RequestData;
-		msg.dataSize					= 0;
-		
-		protocol::sendPacket((uint8_t*)&msg, 0, slaveAddress); */
-		
-//		putlog(" rq a:"); putd(addr); putc('\n');
-		
-		// Добавляет в выходную очередь прикладное сообщение
-		// a			адрес получателя
-		// t			тип прикладного сообщения
-		// sz			число байт данных - макс. 4
-		// data		байты данных  0..3
-		// id				id канала связи
+#ifdef DEBUG_SL_POLL
+		putlog(" rq a:"); putd(addr); putc('\n');
+#endif					
 		Protocol::addTxMsgApp(addr, DataIO::MsgApp_RequestData, 0, 0,
 													TTxRequest::FBreakPacket | TTxRequest::FRqAnswer, SLAVE_IO_LINK_ID);
 	}
@@ -117,18 +104,8 @@ protected:
 	// pn			номер пакета
 	void sendDataAck(uint16_t addr, uint16_t pn)
 	{
-/*		dataio::TMsgAppTypeHeader msg;
-		msg.id								= dataio::MsgAppType;
-		msg.sequenceNumber		= getSeqNumber();
-		msg.type							= dataio::MsgApp_DataAcknowledge;
-		msg.dataSize					= sizeof(uint16_t);
-
-		protocol::sendPacket((uint8_t*)&msg, (uint8_t*)&pn, slaveAddress); */
-
-		uint16_t dataSize = sizeof(uint16_t);
-
-		Protocol::addTxMsgApp(addr, DataIO::MsgApp_DataAcknowledge, sizeof(uint16_t), dataSize,
-													TTxRequest::FBreakPacket | TTxRequest::FRqAnswer, SLAVE_IO_LINK_ID);
+		Protocol::addTxMsgApp(addr, DataIO::MsgApp_DataAcknowledge, sizeof(uint16_t), pn,
+													TTxRequest::FBreakPacket, SLAVE_IO_LINK_ID);
 	}
 
 public:
@@ -197,6 +174,7 @@ public:
 				
 			case kStStartPeriod:
 				index = 0;
+				isData = false;
 				tmPeriod = now;
 				state = kStSendRq;
 				break;
@@ -222,6 +200,7 @@ public:
 				}
 				else if(rcvData)
 				{
+					isData = true;
 					state = kStNext;
 				}
 				else if(rcvNoData)
@@ -231,26 +210,22 @@ public:
 				break;
 				
 			case kStNext:
-/*				state = kStSendRq;
-				do
-				{
-					if(++index == kMaxSlaves)
-					{
-						state = kStWaitRqInterval; 
-						break;
-					}
-				}while(slaves[index].address == 0); */
-				
 				if(++index == kMaxSlaves)
 				{
 					index = 0;
-					state = kStWaitRqInterval;
+					if(isData)
+					{
+						state = kStStartPeriod;
+						timer = now;
+					}
+					else
+						state = kStWaitPeriod;
 				}
 				else
 					state = kStSendRq;
 				break;
 
-			case kStWaitRqInterval:
+			case kStWaitPeriod:
 				if(TIMEOUT(tmPeriod, rqPeriod))
 					state = kStStartPeriod;
 				break;
@@ -263,7 +238,7 @@ public:
 	// Отправляет подтверждение на полученный блок.
 	// При соответствии адреса отправителя вызывает обработчик входящих блоков.
 	//
-	// srcAddress   сетеовй адрес отправителя
+	// srcAddress   сетевой адрес отправителя
 	// p						блок данных
 	// dataId				идентификатор типа данных из входящего сообщения
 	//
@@ -272,31 +247,44 @@ public:
 	//              < 0   ошибка - см. data_buffers::writeData()
 	int16_t handleData(uint16_t srcAddress, TDataBuffer* p, uint16_t dataId)
 	{
+#ifdef DEBUG_SL_POLL
+		putlog(" rx a:"); putd(srcAddress); puts(" pn:"); putd(p->packet);
+#endif		
 		rcvData = true;
-		sendDataAck(srcAddress, p->packet);						// подтверждение получения блока данных
+		sendDataAck(srcAddress, p->packet);
 
 		if(srcAddress == slaves[index].address)
 		{
 			slaves[index].state = kResRcvData; 
 				
-//			sendDataAck(slaves[index].address, p->packet);		// подтверждение получения блока данных
+//			sendDataAck(slaves[index].address, p->packet);
 	
-			// dataId не контролируется - обрабатываем все входящие пакеты
-			if(p->packet != slaves[index].packet)					// исключаем обработку повторных пакетов
+			// исключаем обработку повторных пакетов
+			// dataId не контролируется - в dataHandler() передаем все входящие пакеты
+			if(p->packet != slaves[index].packet)					
 			{
+#ifdef DEBUG_SL_POLL
+				puts(" ok\n");
+#endif
 				slaves[index].packet = p->packet;
 				return dataHandler(srcAddress, p, dataId); 
 			}
 		}
+#ifdef DEBUG_SL_POLL
+		putc('\n');
+#endif
 		return 0; 
 	}
 
 
 	// Обработка сообщения об отсутствии данных
 	//
-	// srcAddress   сетеовй адрес отправителя
+	// srcAddress   сетевой адрес отправителя
 	void handleNoData(uint16_t srcAddress)
 	{
+#ifdef DEBUG_SL_POLL
+		putlog(" ND a:"); putd(srcAddress); putc('\n');
+#endif
 		rcvNoData = true;
 
 		if(srcAddress == slaves[index].address)

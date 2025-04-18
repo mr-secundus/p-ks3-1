@@ -6,7 +6,10 @@
 #define TDATABUFFER_H
 
 #include <stdint.h>
-#include "cfg/cfg_tdatabuffer.h"
+
+#ifndef MAX_DATA_BUFFER_SIZE
+#include "dataio_config.h"
+#endif
 
 
 // Блок данных

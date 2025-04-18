@@ -37,9 +37,9 @@
 #define UART3_BAUD		  	RS232_BAUD	
 #define UART1_BAUD		  	RS485_1_BAUD
 
-#define UART1_TX_SIZE		 		 256				// RS485 down link
+#define UART1_TX_SIZE		 		 128				// RS485 down link
 #define UART1_RX_SIZE		    2048
-#define UART3_TX_SIZE		     256				// RS232 console
+#define UART3_TX_SIZE		     128				// RS232 console
 #define UART3_RX_SIZE		      64
 
 

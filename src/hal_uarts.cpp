@@ -26,6 +26,11 @@ namespace hal::uarts
 	constexpr RINGBUFF_T	*txBuffer_Rs485 = &txBuffer1;  
 	constexpr RINGBUFF_T	*rxBuffer_Rs485 = &rxBuffer1;
 	
+	const uint32_t kRxBufferSize = 256;
+	
+  uint8_t rxBuffer[kRxBufferSize];
+	
+	
 /*	
 #ifdef UART0_TX_SIZE
 uint8_t			raw0tx[UART0_TX_SIZE], raw0rx[UART0_RX_SIZE];
@@ -220,31 +225,28 @@ void resetTx(uint32_t n)
 //
 void process(void)
 {
-	const int kMaxRxSz = 64;
-	
-  uint8_t data[kMaxRxSz];
-  
-  int n = Chip_UART_ReadRB(UART_RS232, rxBuffer_Rs232, &data[0], kMaxRxSz);
+  int n = Chip_UART_ReadRB(UART_RS232, rxBuffer_Rs232, rxBuffer, kRxBufferSize);
 
   if(n > 0)
     for(int i = 0; i < n; i++)
     {
-    	cprocbyte(data[i]);			// консоль
+    	cprocbyte(rxBuffer[i]);			// консоль
     }
 
-	n = Chip_UART_ReadRB(UART_RS485, rxBuffer_Rs485, &data[0], kMaxRxSz);
+	n = Chip_UART_ReadRB(UART_RS485, rxBuffer_Rs485, rxBuffer, kRxBufferSize);
 	
 	if(n > 0)
 	{
 //		for(int i = 0; i < n; i++)  putc(data[i]);		// RS485 -> консоль
+//		Chip_UART_SendRB(UART_RS485, txBuffer_Rs485, data, n);		// эхо
+
+//		puts(" rx n:"); putd(n); puts(" {");
+			
+		TBuffer b(rxBuffer, kRxBufferSize, n);
 		
-		Chip_UART_SendRB(UART_RS485, txBuffer_Rs485, data, n);		// эхо
-		
-		int nn = RingBuffer_PopMult(rxBuffer_Rs485, data, n);
-		
-		TBuffer b(data, nn);
-		
-		Protocol::processInputData(&b, nn, LINK_ID_LOCAL);
+		Protocol::processInputData(&b, n, LINK_ID_LOCAL);
+
+//		puts("} rc:"); putd(rc); putc('\n');
 	}
 }
 

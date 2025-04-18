@@ -21,10 +21,10 @@ static constexpr uint16_t kDataSampleSize = kSampleSize_Int32x3;
 
 #define SLAVE_IO_SLAVES_N				 	8					// макс. число ведомых устройств
 
-#define SLAVE_IO_DATA_BUFFERS_N		32 				// количество буферов данных
+#define SLAVE_IO_DATA_BUFFERS_N		28 				// количество буферов данных
 
-#define SLAVE_IO_RQ_PERIOD				200				// период отправки запросов на получение данных, мс
-#define SLAVE_IO_RQ_TIMEOUT			 	50				// таймаут ответа от устройства, мс
+#define SLAVE_IO_RQ_PERIOD				400				// период отправки запросов на получение данных, мс
+#define SLAVE_IO_RQ_TIMEOUT			 	120				// таймаут ответа от устройства, мс
 
 
 #endif // SLAVE_IO_H
