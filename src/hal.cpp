@@ -286,7 +286,14 @@ void init(void)
 //
 void process(void)
 {
-	clearWDT();
+	static uint32_t ticks=0;
+	
+	if(ticks++ > 20)
+	{
+		ticks = 0;
+		clearWDT();
+	}
+	
 	hal::uarts::process();
 }
 

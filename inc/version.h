@@ -3,13 +3,21 @@
 #ifndef VERSION_H
 #define VERSION_H
 
+#include "board.h"
+#include "debug.h"
+
 #ifdef	NDEBUG
 	#define V_FEATURE_D				0			
 #else
 	#define V_FEATURE_D				0x80	// DEBUG - отладочная версия
 #endif
 
-#define V_FEATURE_0       0
+#ifdef BOARD_REVISION_C0					// Опытный образец платы			
+	#define V_FEATURE_0       1
+#else
+	#define V_FEATURE_0       0
+#endif
+
 #define V_FEATURE_1       0
 #define V_FEATURE_2       0
 

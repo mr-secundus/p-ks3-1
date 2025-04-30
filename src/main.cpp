@@ -1,10 +1,12 @@
 #include <cr_section_macros.h>
 
+#include <stdio.h>
+
 #include <putx.h>
 #include "hal.h"
-#include "version.h"
 #include "tasks.h"
 #include "coninput.h"
+#include "version.h"
 
 //
 void putInitState(void)

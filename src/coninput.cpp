@@ -54,7 +54,7 @@ void processConsoleInput(void)
 				break;
 
 			case 2:									// "reset"
-//				hal::reset();
+				hal::reset();
 				break;
 
 			case 3:									// "r"
