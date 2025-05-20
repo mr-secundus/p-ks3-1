@@ -79,7 +79,7 @@ void putdwx_zs(const unsigned long w)
 }                
 
 //-------------------------------------------------------------------
-void putd(int d)
+void putd(short d)
 {
 	unsigned char buf[7]; 
 	register unsigned char* p = &buf[sizeof(buf)-1];

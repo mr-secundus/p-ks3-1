@@ -185,14 +185,34 @@ int16_t handleParameters(uint16_t opCode, uint16_t n, int32_t *v)
 //
 void handleMsgRequestData(uint16_t srcAddress, DataIO::TMsgAppTypeHeader* msg, bool sendState)
 {
-//	int16_t rc = -1;
 	int16_t n = buffers.getFullBufferSortBySync();
 	
+#ifndef DEBUG_HIIO_APP_MSG
+	if(n != buffers.kRcErr)
+		addMsgData(msg->sequenceNumber, buffers.getBuffer(n), buffers.getAddress(n));
+#else	
 	if(n != buffers.kRcErr)
 	{
-//		rc = addMsgData(msg->sequenceNumber, buffers.getBuffer(n));
 		addMsgData(msg->sequenceNumber, buffers.getBuffer(n), buffers.getAddress(n));
+		
+		putlog(" Rq(");
+		putd(msg->sequenceNumber);
+		puts(") ->  pn:");
+		putd(buffers.getBuffer(n)->packet);
 	}
+	else
+		putlog(" RqData :  error ");
+	
+/*	puts(" free:");
+	putd(buffers.getFreeBuffers());
+	puts(" full:");
+	putd(buffers.getFullBuffers());
+	puts(" ");
+	putd(buffers.countBuffers(TDataBuffersContainer::stFree));
+	puts("/");
+	putd(buffers.countBuffers(TDataBuffersContainer::stFull)); */
+	puts("\n");
+#endif	
 }
 
 
@@ -207,6 +227,19 @@ void handleMsgDataAcknowledge(uint16_t srcAddress, DataIO::TMsgAppDataAcknowledg
 #else
 	buffers.releaseBufferByPacketNumber(msg->packetNumber);
 #endif
+
+#ifdef DEBUG_HIIO_APP_MSG
+	putlog(" Ack\n");
+/*	putlog(" Ack :  free:");
+	putd(buffers.getFreeBuffers());
+	puts(" full:");
+	putd(buffers.getFullBuffers());
+	puts(" ");
+	putd(buffers.countBuffers(TDataBuffersContainer::stFree));
+	puts("/");
+	putd(buffers.countBuffers(TDataBuffersContainer::stFull));
+	puts("\n"); */
+#endif	
 }            
 
 

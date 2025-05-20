@@ -16,19 +16,13 @@ public:
 	static constexpr int16_t kMaxSize = SLAVE_IO_DATA_BUFFERS_N;
 	
 	// Состояние буфера
-	// Именованные константы вместо true/false используются для совместимости с реализацией
-	// с тремя состояниями
-	static constexpr bool stFree = false,
-												stFull = true;
-
-	// Состояние буфера данных
-/*	enum state_t
+	enum state_t
 	{
-		stFree,					// свободен
-		stBusy,					// занят - идет запись
-		stFull					// заполнен данными
-	}; */
-
+		stFree = 0,
+		stBusy,
+		stFull
+	};
+	
 protected:
 	// Хранение информации об одном буфере данных. 
 	// Базовый элемент для хранения данных - buffer.
@@ -38,7 +32,7 @@ protected:
 		TDataBuffer *buffer;					// блок данных
 //		struct pbuf	*pbuffer;					// pbuf для размещения buffer
 		uint16_t		address;					// адрес ведомого устройства, от которого приняты данные
-		bool 				state;						// true - блок содержит данные
+		state_t			state;						// true - блок содержит данные
 	};
 	
 	buffer_info_t		buffers[kMaxSize];
@@ -48,7 +42,6 @@ protected:
 						nFree,								// количество свободных буферов
 						nFull,								// количество заполненных буферов
 						iFree,								// индекс очередного свободного буфера
-						iFull,								// индекс очередного заполненного буфера
 						sizeofTData;					// размер одного отсчета данных - в данной реализации не используется
 	
 public:
@@ -58,7 +51,6 @@ public:
 		nFree(kMaxSize),
 		nFull(0),
 		iFree(kMaxSize),
-		iFull(0),
 		sizeofTData(0)
 	{
 		for(auto& x : buffers)
@@ -105,7 +97,6 @@ public:
 		nFree = size;
 		nFull = 0;
 		iFree = 0;
-		iFull = 0;      
 	}
 	
 	
@@ -128,17 +119,6 @@ public:
 	// Устанавливает размер отсчёта данных
 	void setDataSize(uint16_t sz) { sizeofTData = sz;	}
 
-	
-	// Возвращает индекс первого свободного буфера
-	// При отсутствии свободных буферов возвращает kRcErr
-	int16_t getFreeBuffer(void)
-	{
-		if(nFree == 0)
-			return kRcErr;
-		else
-			return iFree;
-	}
-	
 	
 	// Чтение адреса источника данных для отдельного буфера
 	//
@@ -164,33 +144,44 @@ public:
 	}
 		
 	
+	// Возвращает индекс первого свободного буфера или kRcErr
+	int16_t getFreeBuffer(void)
+	{
+		if(nFree > 0)
+		{
+			int16_t index = iFree;
+			
+			uint16_t i;
+			for(i = 0; i < size  &&  buffers[index].state != stFree; i++, index++)
+				if(index >= size)
+					index = 0;
+			
+			if(i < size)
+				return index;
+		}
+		return kRcErr;
+	}
+
+	
 	// Найти свободый буфер и пометить его как занятый.
-	// Выполняет установку указателя на следующий свободный буфер.
 	//
 	// Возвращает индекс выбранного буфера или kRcErr, если нет свободных буферов. 
 	int16_t lockFreeBuffer(void)
 	{
-		if(nFree == 0)
-			return kRcErr;
-		
-		int16_t index = iFree;
-		
-		if(++iFree >= size)
-			iFree = 0;
-		
-		nFree--;
-		
-		uint16_t i;
-		for(i = 0; i < size  &&  buffers[i].state != stFree; i++)
-			if(++index >= size)
-				index = 0;
+		int16_t index = getFreeBuffer();
 
-		if(i < size)
+		if(index != kRcErr)
 		{
+			nFree--;
+			
+			iFree = index + 1;
+
+			if(iFree >= size)
+				iFree = 0;
+
 			buffers[index].buffer->packet = 0;
 			buffers[index].buffer->size = 0;
-//			buffers[index].state = stBusy;
-			buffers[index].state = stFull;
+			buffers[index].state = stBusy;
 			return index;
 		}
 		else
@@ -198,48 +189,6 @@ public:
 	}
 
 	
-	// Перевод буфера с индексом n в состояние "Free"
-	void releaseBuffer(uint16_t n)
-	{
-		if(buffers[n].state == stFull)
-		{                
-			if(nFull > 0)
-				nFull--;		
-			
-			if(nFull > 0)
-				if(++iFull == size)
-					iFull = 0;
-		}
-		
-		if(buffers[n].state != stFree)
-		{
-			if(nFree < size)
-				nFree++;
-			
-			if(nFree == 1)
-				iFree = n;
-		}                    
-		buffers[n].state = stFree;
-		buffers[n].buffer->packet = 0;
-		buffers[n].address = 0;
-	}         
-
-	// Перевод буфера в состояние "Free"
-/*	void releaseBuffer(buffer_info_t* b)
-	{
-		if(b->state)
-			if(nFree > 0)
-				nFree--;		
-		
-		if(b->state)
-			if(nFree < size)
-				nFree++;
-
-		b->state = stFree;
-		b->buffer = 0;
-	} */         
-
-
 	// Снять статус "Busy" с буфера с номером n
 	// Если в буфере есть данные, он переводится в состояние "Full", иначе "Free"
 	void unlockBuffer(uint16_t n)
@@ -250,14 +199,33 @@ public:
 			
 			if(nFull < size)
 				nFull++;
-			
-			if(nFull == 1)
-				iFull = n;
 		}
 		else
 			releaseBuffer(n);   
 	}                     
+
 	
+	// Перевод буфера с индексом n в состояние "Free"
+	void releaseBuffer(uint16_t n)
+	{
+		if(buffers[n].state == stFull)
+			if(nFull > 0)
+				nFull--;		
+		
+		if(buffers[n].state != stFree)
+		{
+			if(nFree < size)
+				nFree++;
+			
+			if(nFree == 1)
+				iFree = n;
+		}                    
+		
+		buffers[n].state = stFree;
+		buffers[n].buffer->packet = 0;
+		buffers[n].address = 0;
+	}         
+
 	
 	// Перевод буфера с packetNumber==pn в состояние "Free"
 	//
@@ -309,12 +277,14 @@ public:
 	} */
 
 	
-	// Возвращает указатель на буфер с индексом n 
+	// Получить указатель на буфер с индексом n 
 	TDataBuffer* getBuffer(int16_t n)	{ return buffers[n].buffer;	}
 
 	
-	// Возвращает заполненный буфер с минимальным значением sync
-	// Если не найден, возвращает NULL
+	// Получить индекс заполненного буфера с минимальным значением sync
+	//
+	// return			>= 0	индекс буфера
+	//						  -1	ошибка
 	int16_t getFullBufferSortBySync(void)
 	{
 		uint32_t syncMin = 0xFFFFFFFF;    // мин. обнаруженное значение sync
@@ -329,11 +299,19 @@ public:
 				}
 
 		if(index >= 0)
-		{
-			iFull = index;
 			return index;
-		}
 		else
 			return kRcErr;
+	}
+
+	
+	// Подсчет фактичесого количества буферов в состоянии st
+	int16_t countBuffers(state_t st)
+	{
+		int16_t n = 0;
+		for(uint16_t i = 0; i < size; i++)
+			if(buffers[i].state == st)
+				n++;
+		return n;
 	}
 };

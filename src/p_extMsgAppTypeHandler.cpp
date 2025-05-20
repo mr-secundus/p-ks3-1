@@ -71,13 +71,30 @@ void extMsgAppTypeHandler(DataIO::TMsgAppTypeHeader *msg, uint16_t destAddress, 
 
 				Protocol::addMessage((uint8_t *)&m, 0);
 				Protocol::sendPacket(srcAddress);
+
+#ifdef DEBUG_HIIO_APP_MSG
+				putlog(" RqData  ->  DataAbsence\n");
+#endif	
 			}
 			else
-				data_buffers::handleMsgRequestData(srcAddress, msg);
+				{
+					data_buffers::handleMsgRequestData(srcAddress, msg);
+#ifdef DEBUG_HIIO_APP_MSG
+//					putlog(" RqData  ->  Data\n");
+#endif	
+				}
 			break;
 	
 		case DataIO::MsgApp_DataAcknowledge:
 			data_buffers::handleMsgDataAcknowledge(srcAddress, (DataIO::TMsgAppDataAcknowledge *)msg);
+#ifdef DEBUG_HIIO_APP_MSG
+			if (data_buffers::getDataReadyInfo() == data_buffers::kNoData)
+			{
+				putlog(" DataAck(");
+				putd(((DataIO::TMsgAppDataAcknowledge *)msg)->packetNumber);
+				puts(") : buffer free\n");
+			}
+#endif	
 		break;
 	}
 }
