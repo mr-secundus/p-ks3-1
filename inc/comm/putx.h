@@ -27,7 +27,7 @@ void putbx(const unsigned char b);
 void putwx(const unsigned w);
 void putdwx(const unsigned long dw);
 void putdwx_zs(const unsigned long dw);	// zero supression
-void putd(int d);
+void putd(short d);
 void putl(long d);
 //void putw(unsigned short w);
 void putdw(unsigned long dw);

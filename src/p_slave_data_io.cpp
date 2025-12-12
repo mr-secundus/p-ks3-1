@@ -64,9 +64,11 @@ int16_t dataHandler(uint16_t srcAddress, TDataBuffer* p, uint16_t dataId)
 {
 	int16_t rc = data_buffers::writeBuffer(srcAddress, p, dataId); 
 
+#ifdef DEBUG_SL_DATA
 	char s[64];
 	sprintf(s, "%lu rcv a:%d pn:%d sy:%lu sz:%d\n", now, srcAddress, p->packet, p->sync, p->size);
 	puts(s);
+#endif	
 
 	// вывод значений отсчетов
 /*	int32_t* d = (int32_t*)p->data;

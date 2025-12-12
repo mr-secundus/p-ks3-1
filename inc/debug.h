@@ -7,6 +7,7 @@
 
 #if !defined	NDEBUG
 
+#include "defines.h"
 #include <putx.h>
 
 //	#define DEBUG_TASKS									// вывод инф. при активации/деактивации задач
@@ -20,6 +21,7 @@
 
 //	#define DEBUG_PROTOCOL_MESSAGES			// обмен с ВУ
 //	#define DEBUG_PROTOCOL_MESSAGES_LOC	// сообщения от узлов на локальной шине
+//	#define DEBUG_HIIO_APP_MSG						// сообщения типа MsgAppType при обмене с ВУ
 
 //	#define DEBUG_TX_BUFFERS						// буферизация данных измерения
 	
@@ -33,6 +35,8 @@
 //	#define DEBUG_UDP_TX_APP  					// только размер выходного пакета
 
 //	#define DEBUG_SL_POLL  							// опрос ведомых устройств
+//	#define DEBUG_SL_DATA								// приём данных от ведомых
+
 
 //	#define SIM_DATA										// имитация блоков данных	
 	
