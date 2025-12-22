@@ -126,8 +126,52 @@ void TTaskInit::process(void)
 
 		case 2:
 			data_buffers::init();
-			state = 3;
-			break;                                                           
+			hal::setLed(hal::kLed0, true);
+			hal::setLed(hal::kLed1, false);
+			hal::setLed(hal::kLed2, false);
+			hal::setLed(hal::kLed3, false);
+			timer = now;
+			state = 21;
+			break;    
+			
+		case 21:
+			if(TIMEOUT(timer, 1000))
+			{
+				hal::setLed(hal::kLed0, false);
+				hal::setLed(hal::kLed1, true);
+				timer = now;
+				state = 22;
+			}
+			break;
+
+		case 22:
+			if(TIMEOUT(timer, 1000))
+			{
+				hal::setLed(hal::kLed1, false);
+				hal::setLed(hal::kLed2, true);
+				hal::setLed(hal::kLed3, false);
+				timer = now;
+				state = 23;
+			}
+			break;
+
+		case 23:
+			if(TIMEOUT(timer, 1000))
+			{
+				hal::setLed(hal::kLed2, false);
+				hal::setLed(hal::kLed3, true);
+				timer = now;
+				state = 24;
+			}
+			break;
+
+		case 24:
+			if(TIMEOUT(timer, 1000))
+			{
+				hal::setLed(hal::kLed3, false);
+				state = 3;
+			}
+			break;
 			
 		case 3:
 		 	supervisor.activateTask(task_MAC_Service);
