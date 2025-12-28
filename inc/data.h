@@ -143,6 +143,24 @@ using TSetup3 = struct setup3_t
 } TDeviceState;
 */
 
+typedef struct tagDeviceState
+{
+  uint32_t
+    isMeasOn          : 1,    // идет измерение
+    b1                : 1,
+    b2                : 1,
+    isSensorError     : 1,    // неисправность датчика
+    isSyncOk          : 1,    // выполнялась синхронизация (запись в R21)
+		reserved          : 20;
+
+  inline uint32_t getU32(void) { return *((uint32_t*)this); }
+  
+  tagDeviceState(void)
+  {
+    *((uint32_t*)this) = 0;
+  }
+} TDeviceState;
+
 //
 // Флаги для внутреннего использования
 //
@@ -168,7 +186,7 @@ extern TSetup1		setup1;
 extern TSetup2		setup2;
 extern TSetup3		setup3;
 
-//extern TDeviceState     deviceState;
+extern TDeviceState     deviceState;
 extern TServiceFlags    serviceFlags;
 
 extern uint32_t R14, R15, R19, R99;

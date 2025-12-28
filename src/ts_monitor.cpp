@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "protocol.h"
 #include "p_slave_data_io.h"
+#include "indication.h"
 
 
 // opcode:  0 - отработка индикации
@@ -44,10 +45,13 @@ void TTaskMonitor::handleEvent(TCMessage* msg)
 
 		case msgNetConnected:
 			p_slave_data_io::start();
+			indication::setState(indication::kEth_Link, 1);
       break;
 
+		case msgNetInitStart:
 		case msgNetDisconnected:
 			p_slave_data_io::stop();
+			indication::setState(indication::kEth_Link, 0);
       break;
 	}
 }
