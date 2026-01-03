@@ -26,7 +26,7 @@ static uint8_t out=0;
 void processConsoleInput(void)
 {
 	char *sp;       
-	uint32_t i, v;
+	uint32_t i, i1, v;
 	int32_t vi;
 
 	sp = cgets();
@@ -58,7 +58,16 @@ void processConsoleInput(void)
 				break;
 
 			case 3:									// "r"
-				if(sscanf(sp, "r %lu", &i) == 1)
+				if(sscanf(sp, "r %lu %lu", &i, &i1) == 2)
+				{
+					for(unsigned int j = i; j < i + i1; j++)
+						if(Parameters.read(j, &vi) == 0)
+						{
+							puts("\np"); putd(j); putc(':'); putl(vi); putc('\n');
+						}
+						else puts("??\n");
+				} 
+				else if(sscanf(sp, "r %lu", &i) == 1)
 				{
 					if(Parameters.read(i, &vi) == 0)
 					{
