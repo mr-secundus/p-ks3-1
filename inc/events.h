@@ -22,14 +22,11 @@ const TMsgMask grpALL							= 0x0FFFFFFFUL;		// отладочный код
 
 const TMsgMask grpRegisterIO			= 0x00000002UL;		// обмен с ВУ - чтение/запись регистров
 const TMsgMask grpControl					= 0x00000004UL;		// управление устройством
-const TMsgMask grpNet							= 0x00000200UL;		// состояние EMAC и события подключения по сети
+const TMsgMask grpNet							= 0x00000200UL;		// состояние EMAC и события подключения по Ethernet
+const TMsgMask grpNetIo						= 0x00000400UL;		// обмен с ВУ по Ethernet
+const TMsgMask grpSlavesIo				= 0x00000800UL;		// обмен с ведомыми устройствами
 
-const TMsgMask grpControls				= 0x10000001UL;		// органы управления
-const TMsgMask grpAppIO						= 0x10000002UL;		// логические сигналы прикладного уровня:
-																										// изменения состояний объектов, входы от концевых выключателей
-const TMsgMask grpDataIO					= 0x10000004UL;		// обмен с узлами устройства
 const TMsgMask grpSystem					= 0x10000010UL;		// системный уровень: состояние устройства, ошибки.
-const TMsgMask grpGUI							= 0x10000200UL;		// GUI
 
 const TMsgMask grpNetState				= 0x00000200UL;		// состояние EMAC и события подключения по сети
 
@@ -56,6 +53,11 @@ const short msgNetDisconnected		= 1204; 			// разорвано подключение Ethernet
 const short msgNetError						= 1205; 			// аппаратная ошибка сетевого интерфейса
 const short msgUDP_InitOk					= 1206; 			// успешная инициализация модуля UDP
 const short msgUDP_InitError			= 1207; 			// ошибка инициализации модуля UDP
+
+const short msgNetIoHiRequest		  = 1210; 			// получен запрос от ВУ
+
+const short msgSlaveMsg	  				= 1220; 			// получено сообщение от ведомого устройства
+
 
 
 

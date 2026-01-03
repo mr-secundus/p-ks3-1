@@ -1,4 +1,6 @@
 // indication.h
+//
+// Управление индикаторами устройства
 
 #ifndef INDICATION_H
 #define INDICATION_H

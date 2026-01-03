@@ -1,4 +1,6 @@
- // indication.cpp
+// indication.cpp
+//
+// Управление индикаторами устройства
 
 #include "cfg/defines.h"
 #include "hal.h"
@@ -46,10 +48,11 @@ namespace indication
 	// Обработка автомата индикации
 	void process(void)
 	{
-	  uint32_t tm, tmnow = now;
-		
+	  uint32_t tm = 0, tmnow = now;
+	  
 	  switch(fmState)
 	  {
+	  	// Начало цикла индикации
 	    default:
 	    case fm_state_t::kStart:
 	        led0.cnt = led1.cnt = 0;
@@ -57,6 +60,7 @@ namespace indication
 	        fmState = fm_state_t::kCheckState;
 	      break;
 
+	    // Проверка состояний и установка по ним типа индикации для каждого индикатора
 	    case fm_state_t::kCheckState:
 	    	if(state[kHw_Err])
 	    		led0.st = kI0;
@@ -70,16 +74,19 @@ namespace indication
 	    		led0.st = kI4;
 	    	
 	    	if(!state[kRs485_Io])															// отсутствует обмен по RS485
-	    		led0.st = kI0;
+	    		led1.st = kI0;
 	    	else if(state[kRs485_Err])												// ошибки обмена по RS485
 	    		led1.st = kI1;
 	    	else
-	    		led0.st = kI2;																	// обмен по RS485
+	    		led1.st = kI2;																	// обмен по RS485
 	    	
 	      fmState = fm_state_t::kIndication;
 	      led0.timer = led1.timer = tmnow;
+	      led0.cnt = led1.cnt = 0;
+	      led0.end = led1.end = 0;
 	    	break;
 
+	    // Вывод на индикаторы с отработкой интервалов времени
 	    case fm_state_t::kIndication:
 	      if(tmnow >= led0.timer)
 	      {
@@ -87,7 +94,9 @@ namespace indication
 	        {
 	        	default: 
 	            if(led0.cnt==0)
-	            	{ l0set = kLedOff; tm = 2000; led0.end = true; }
+	            	{ l0set = kLedOff; tm = 2000; }
+	            else
+	            	led0.end = true;
 	            break;
 	        		
 	          case kI1:																// ошибка загрузки setup
@@ -95,32 +104,38 @@ namespace indication
 	            	{ l0set = kLedRed;   tm = 500;   led0.cnt++; }
 	            else if(led1.cnt==1 || led1.cnt==3)
 	            	{ l0set = kLedOff;   tm = 500;   led0.cnt++; }
-	            if(led1.cnt==3)
+	            else
 	            	led0.end = true;
 	            break;
 
 	          case kI2:																// нет линка
 	            if(led0.cnt==0)
-	            	{ l0set = kLedRed; tm = 2000; led0.end = true; }
+	            	{ l0set = kLedRed; tm = 2000; led0.cnt++; }
+	            else
+	            	led0.end = true;
 	            break;
 
 	          case kI3:																// есть линк, нет обмена по Ethernet
 	            if(led0.cnt==0)
-	            	{ l0set = kLedGreen;  tm = 2000; led0.end = true; }
+	            	{ l0set = kLedGreen;  tm = 2000; led0.cnt++; }
+	            else
+	            	led0.end = true;
 	            break;
 
 	          case kI4:																// есть обмен по Ethernet
 	            if(led0.cnt==0)
 	            	{ l0set = kLedGreen;  tm = 500;  led0.cnt++; }
 	            else if(led1.cnt==1)
-	            	{ l0set = kLedOff;  tm = 1500;  led0.end = true; }
+	            	{ l0set = kLedOff;  tm = 1500;  led0.cnt++; }
+	            else
+	            	led0.end = true;
 	            break;
 	        }
 	        
 	        led0.timer += MS_TO_TICKS(tm);
 	        
 	        bool l0, l1;
-	        if(l0set == kLedRed)        { l0 = true; l1 = false; }
+	        if(l0set == kLedRed)        { l0 = true;  l1 = false; }
 	        else if(l0set == kLedGreen) { l0 = false; l1 = true; }
 	        else                        { l0 = false; l1 = false; }
 					hal::setLed(hal::kLed0, l0);
@@ -133,40 +148,55 @@ namespace indication
 	        {
 	        	default: 
 	            if(led1.cnt==0)
-	            	{ l1set = kLedOff; tm = 2000; led1.end = true; }
+	            	{ l1set = kLedOff; tm = 2000; led1.cnt++;}
+	            else
+	            	led1.end = true;	            	
 	            break;
 	        		
 	          case kI0:																// отсутствует обмен по RS485
 	            if(led1.cnt==0)
-	            	{ l1set = kLedRed; tm = 2000; led1.end = true; }
+	            	{ l1set = kLedRed; tm = 2000; led1.cnt++;}
+	            else
+	            	led1.end = true;	            	
 	            break;
 
 	          case kI1:																// ошибки обмена по RS485
-	            if(led1.cnt==0 || led1.cnt==2)
+	            if(led1.cnt==0)
 	            	{ l1set = kLedRed;  tm = 500;  led1.cnt++; }
-	            else if(led1.cnt==1 || led1.cnt==3)
-	            	{ l1set = kLedOff;  tm = 500;  led1.cnt++; }
+	            else if(led1.cnt==1)
+	            	{ l1set = kLedOff;  tm = 1500; led1.cnt++; }
+	            else
+	            	led1.end = true;	            	
 	            break;
 
 	          case kI2:																// обмен по RS485
-	            if(led1.cnt==0 || led1.cnt==2)
+/*	            if(led1.cnt==0 || led1.cnt==2)
 	            	{ l1set = kLedGreen;  tm = 500;  led1.cnt++; }
 	            else if(led1.cnt==1 || led1.cnt==3)
 	            	{ l1set = kLedOff;  tm = 500;  led1.cnt++; }
 	            if(led1.cnt==3)
-	            	led1.end = true;
+	            	led1.end = true; */
+	            if(led1.cnt==0)
+	            	{ l1set = kLedGreen;  tm = 500; led1.cnt++; }
+	            else if(led1.cnt==1)
+	            	{ l1set = kLedOff;  tm = 1500; led1.cnt++; }
+	            else
+	            	led1.end = true;	            	
 	            break;
 	        }
 	        
 	        led1.timer += MS_TO_TICKS(tm);
 	        
 	        bool l0, l1;
-	        if(l1set == kLedRed)        { l0 = true; l1 = false; }
+	        if(l1set == kLedRed)        { l0 = true;  l1 = false; }
 	        else if(l1set == kLedGreen) { l0 = false; l1 = true; }
 	        else                        { l0 = false; l1 = false; }
 					hal::setLed(hal::kLed2, l0);
 					hal::setLed(hal::kLed3, l1);
 				}
+
+	      if(led0.end  &&  led1.end)
+	  	  	fmState = fm_state_t::kCheckState;
 	      break;		// case fm_state_t::kIndication:
 	  }
 	}

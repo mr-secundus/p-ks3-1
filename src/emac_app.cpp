@@ -1,4 +1,6 @@
-// emac_service
+// emac_app.cpp
+// 
+// Интерфейс к нижнему уровню управления EMAC.
 
 #include "lwip/init.h"
 #include "lwip/opt.h"

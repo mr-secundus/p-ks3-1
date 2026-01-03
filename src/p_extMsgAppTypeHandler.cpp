@@ -3,6 +3,7 @@
 // Обработчик специфичных для проекта подтипов MsgAppType при обмене с ВУ
  
 #include "hal.h"
+#include "taskdef.h"
 #include "dataio/dataio_app_types.h"
 #include "protocol.h"
 #include "protocol_app/p_tprotocolinst.h"
@@ -60,6 +61,7 @@ void extMsgAppTypeHandler(DataIO::TMsgAppTypeHeader *msg, uint16_t destAddress, 
 			break;
 	
 		case DataIO::MsgApp_RequestData:
+			sendMessage(grpNetIo, msgNetIoHiRequest);
 			// при отсутствии данных послать MsgApp_DataAbsence
 			if (data_buffers::getDataReadyInfo() == data_buffers::kNoData)
 			{

@@ -4,6 +4,7 @@
 
 #include "hal.h"
 #include "debug.h" 
+#include "taskdef.h"
 #include "cfg/defines.h"
 #include "cfg/slave_io.h"
 #include "protocol.h"
@@ -37,7 +38,9 @@ void handleMsgAppType(DataIO::TMsgAppTypeHeader* msg, uint16_t destAddress, uint
 #ifdef DEBUG_PROTOCOL_MESSAGES_LOC
 	puts("msgApp sq:"); putd(msg->sequenceNumber); puts(" t:"); putl(msg->type); putc('\n');
 #endif
-	                                                                      
+
+	sendMessage(grpSlavesIo, msgSlaveMsg);
+	
 	// Блок данных нужного типа 
 	if(msg->type == kDataId)
 	{
